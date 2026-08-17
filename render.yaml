@@ -26,11 +26,11 @@ services:
         fromDatabase:
           name: qswarm-db
           property: connectionString
-      - key: OPTIMIZATION_SERVICE_URL
+      - key: OPTIMIZATION_SERVICE_HOST
         fromService:
           type: web
           name: qswarm-optimization
-          property: url
+          property: hostport
       - key: EMAIL_USER
         value: "anandkrishnapv09@gmail.com"
       - key: EMAIL_PASS
@@ -44,7 +44,4 @@ services:
     startCommand: "cd web && npm run start"
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: qswarm-api
-          property: url
+        value: "UPDATE_ME_AFTER_API_DEPLOYS"

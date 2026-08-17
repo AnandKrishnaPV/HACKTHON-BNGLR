@@ -25,7 +25,8 @@ export class QuantumOptimizationAgent {
   private serviceUrl: string;
 
   constructor() {
-    this.serviceUrl = process.env.OPTIMIZATION_SERVICE_URL || 'http://localhost:8000';
+    const hostport = process.env.OPTIMIZATION_SERVICE_HOST;
+    this.serviceUrl = process.env.OPTIMIZATION_SERVICE_URL || (hostport ? `http://${hostport}` : 'http://localhost:8000');
   }
 
   /**
