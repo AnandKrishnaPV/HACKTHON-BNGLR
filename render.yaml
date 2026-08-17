@@ -1,0 +1,50 @@
+databases:
+  - name: qswarm-db
+    databaseName: qswarm
+    user: qswarm
+    plan: free
+
+services:
+  # Python Quantum Solver API
+  - type: web
+    name: qswarm-optimization
+    env: python
+    buildCommand: "cd optimization && pip install -r requirements.txt"
+    startCommand: "cd optimization && uvicorn app:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+
+  # Node API
+  - type: web
+    name: qswarm-api
+    env: node
+    buildCommand: "cd api && npm install && npx prisma generate"
+    startCommand: "cd api && npx prisma db push --accept-data-loss && npx tsx prisma/seed.ts && npx tsx src/index.ts"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: qswarm-db
+          property: connectionString
+      - key: OPTIMIZATION_SERVICE_URL
+        fromService:
+          type: web
+          name: qswarm-optimization
+          property: url
+      - key: EMAIL_USER
+        value: "anandkrishnapv09@gmail.com"
+      - key: EMAIL_PASS
+        value: "wewuxhsdhazlcuji"
+
+  # Next.js Frontend
+  - type: web
+    name: qswarm-web
+    env: node
+    buildCommand: "cd web && npm install && npm run build"
+    startCommand: "cd web && npm run start"
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: qswarm-api
+          property: url

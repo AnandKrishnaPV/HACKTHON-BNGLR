@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+numpy
+qiskit
+qiskit-optimization
+qiskit-algorithms
+qiskit-aer
