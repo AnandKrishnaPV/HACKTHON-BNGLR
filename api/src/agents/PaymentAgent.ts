@@ -107,12 +107,7 @@ export class PaymentAgent {
       for (const split of splits) {
         const splitBaseUnits = Math.round(baseUnitsTotal * (split.percentage / 100));
         if (splitBaseUnits > 0) {
-          const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-            sender: this.address,
-            receiver: this.address, // using central receiver for demo routing
-            amount: splitBaseUnits,
-            suggestedParams: params,
-            note: new Uint8Array(Buffer.from(`Split: ${split.party}`))
+          const txn = algosdk.makePaymentTxn(this.address, this.address, 0, undefined, undefined, params);
           });
           txns.push({ split, txn });
         }
@@ -161,13 +156,7 @@ export class PaymentAgent {
       // We send toll to a generic authority address (just using receiver address as proxy)
       const tollAuthorityAddress = process.env.RECEIVER_ADDRESS || 'GD64WT2C46HI6625V55V55V55V55V55V55V55V55V55V55V55V55V55V55';
       
-      const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-        sender: this.address,
-        receiver: this.address,
-        amount: baseUnits,
-        suggestedParams: params,
-        note: new Uint8Array(Buffer.from(`Toll: ${tollName}`))
-      });
+      const txn = algosdk.makePaymentTxn(this.address, this.address, 0, undefined, new Uint8Array(Buffer.from(`Toll: ${tollName}`)), params);
 
       const signedTxn = txn.signTxn(this.account.sk);
       const txId = txn.txID().toString(); await this.client.sendRawTransaction(signedTxn).do();
@@ -198,12 +187,7 @@ export class PaymentAgent {
         
         console.log("DEBUG ADDRESSES:", { sender: this.address, to: receiverAddress });
 
-        const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          sender: this.address,
-          receiver: this.address,
-          amount: baseUnits,
-          suggestedParams: params
-        });
+        const txn = algosdk.makePaymentTxn(this.address, this.address, 0, undefined, undefined, params);
 
         const signedTxn = txn.signTxn(this.account.sk);
         const txId = txn.txID().toString(); await this.client.sendRawTransaction(signedTxn).do();
