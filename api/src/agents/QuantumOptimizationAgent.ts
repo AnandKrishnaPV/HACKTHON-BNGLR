@@ -34,7 +34,7 @@ export class QuantumOptimizationAgent {
    */
   async runOptimization(routes: RouteCandidate[], weights: OptimizationWeights) {
     try {
-      const response = await axios.post(`${this.serviceUrl}/optimize`, {
+      const response = await axios.post(`http://localhost:8000/optimize`, {
         routes: routes,
         weights: weights
       });
