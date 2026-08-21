@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import FinancialLedger from "./payments/FinancialLedger";
+import { FinancialLedger } from "./payments/FinancialLedger";
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import axios from 'axios';
