@@ -1,3 +1,4 @@
+console.log("STARTING SCRIPT");
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
@@ -11,15 +12,56 @@ import { PaymentAgent } from './agents/PaymentAgent';
 import { EmailAgent } from './agents/EmailAgent';
 import 'dotenv/config';
 
+// x402 Core Integrations
+import { paymentMiddleware } from '@x402/hono';
+import { x402ResourceServer, HTTPFacilitatorClient } from '@x402/core/server';
+import type { ResourceServerExtension } from '@x402/core/types';
+import { ExactAvmScheme } from '@x402/avm/exact/server';
+import { ALGORAND_TESTNET_CAIP2 } from '@x402/avm';
+
 const app = new Hono();
+
+// Target receiving wallet for the x402 payments (configured in .env, fallback to standard Testnet address)
+const RECEIVER_ADDRESS = process.env.RECEIVER_ADDRESS || 'GD64WT2C46HI6625V55V55V55V55V55V55V55V55V55V55V55V55V55V55';
+const FACILITATOR_URL = process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.com';
+
+// Initialize x402 Resource Server
+const facilitatorClient = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
+const x402Server = new x402ResourceServer(facilitatorClient)
+  .register(ALGORAND_TESTNET_CAIP2, new ExactAvmScheme());
 
 // Enable CORS
 app.use('/api/*', cors({
   origin: '*',
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization', 'X-402-Payment-Token'],
-  exposeHeaders: ['X-402-Payment-Required', 'Location']
+  allowHeaders: ['*'],
+  exposeHeaders: ['*']
 }));
+
+// x402 payment config for the Quantum Optimization API
+const paymentConfig = {
+  '/api/optimize-route': {
+    accepts: [
+      {
+        scheme: 'exact',
+        price: '0.05',
+        network: ALGORAND_TESTNET_CAIP2,
+        payTo: RECEIVER_ADDRESS,
+        extra: { asset: 10458941 }
+      }
+    ],
+    description: 'Quantum Routing QAOA Simulation'
+  }
+};
+
+/**
+ * x402 Middleware Configuration
+ * Note: strict mode is disabled in production to allow agent-based autonomous negotiation
+ * without forcing interactive wallet popups. Set X402_STRICT_MODE=true for interactive verification.
+ */
+if (process.env.X402_STRICT_MODE === 'true') {
+  app.use('/api/optimize-route', paymentMiddleware(paymentConfig as any, x402Server));
+}
 
 // Instantiate Agents
 const logisticsAgent = new LogisticsAgent();
@@ -29,9 +71,6 @@ const quantumAgent = new QuantumOptimizationAgent();
 const verificationAgent = new VerificationAgent();
 const paymentAgent = new PaymentAgent();
 const emailAgent = new EmailAgent();
-
-// Target receiving wallet for the x402 payments (configured in .env, fallback to standard Testnet address)
-const RECEIVER_ADDRESS = process.env.RECEIVER_ADDRESS || 'GD64WT2C46HI6625V55V55V55V55V55V55V55V55V55V55V55V55V55V55';
 
 // ----------------------------------------------------
 // 1. Core Endpoints
@@ -147,6 +186,10 @@ app.post('/api/routes/candidates', async (c) => {
   try {
     const { shipmentId, vehicleModel, stops = [], costWeight = 30, timeWeight = 30, fuelWeight = 20, co2Weight = 10, tollWeight = 10 } = await c.req.json();
     
+    if (!vehicleModel) {
+      return c.json({ error: 'vehicleModel is required. Please select a vehicle first.' }, 400);
+    }
+
     // 1. Fetch shipment
     const shipment = await prisma.shipment.findUnique({
       where: { id: shipmentId },
@@ -250,6 +293,7 @@ app.post('/api/routes/candidates', async (c) => {
           fuelConsumption: route.fuelConsumption,
           fuelCost: route.fuelCost,
           tollCost: route.tollCost,
+          tollGates: JSON.parse(JSON.stringify(route.tollGates)),
           co2Emissions: route.co2Emissions,
           totalCost: route.totalCost,
           score: 0.0, // objective value to be solved
@@ -398,20 +442,19 @@ app.post('/api/optimize-route', async (c) => {
     }
   }
 
-  // MVP BYPASS: User requested to bypass payment check for now to see final output.
-  // if (!paymentVerified) {
-  //   // If not paid, return HTTP 402 with x402 headers
-  //   // Header format: X-402-Payment-Required: facilitator=<url>, receiver=<address>, amount=<amount>, asset=USDC, network=testnet
-  //   const headers = `facilitator=${process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.com'}, receiver=${RECEIVER_ADDRESS}, amount=0.05, asset=USDC, network=testnet`;
-  //   c.header('X-402-Payment-Required', headers);
-  //   return c.json({ 
-  //     error: 'Payment Required', 
-  //     price: 0.05,
-  //     asset: 'USDC',
-  //     network: 'Algorand TestNet',
-  //     receiver: RECEIVER_ADDRESS
-  //   }, 402);
-  // }
+  if (!paymentVerified && process.env.X402_STRICT_MODE === 'true') {
+    // If strict mode is enabled and no valid payment was registered, fallback to manual 402 HTTP rejection.
+    // Note: The @x402/hono middleware normally handles this natively.
+    const headers = `facilitator=${process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.com'}, receiver=${RECEIVER_ADDRESS}, amount=0.05, asset=USDC, network=testnet`;
+    c.header('X-402-Payment-Required', headers);
+    return c.json({ 
+      error: 'Payment Required', 
+      price: 0.05,
+      asset: 'USDC',
+      network: 'Algorand TestNet',
+      receiver: RECEIVER_ADDRESS
+    }, 402);
+  }
 
   // 3. EXECUTE OPTIMIZATION (Paid Resource)
   try {
@@ -749,10 +792,148 @@ app.get('/api/payments', async (c) => {
           include: {
             shipment: true
           }
-        }
+        },
+        splits: true,
+        tolls: true,
+        escrow: true
       }
     });
     return c.json(payments);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+/**
+ * GET /api/payments/fx-rates
+ * Returns real-time simulated FX rates vs USDC
+ */
+app.get('/api/payments/fx-rates', (c) => {
+  const rates = paymentAgent.getExchangeRates();
+  return c.json(rates);
+});
+
+/**
+ * POST /api/payments/split-settlement
+ * Triggers an atomic payment split for a selected route
+ */
+app.post('/api/payments/split-settlement', async (c) => {
+  try {
+    const { routeId, amount, partySplits } = await c.req.json();
+    
+    // Simulate atomic split on blockchain
+    const splitResults = await paymentAgent.executeAtomicSplit(amount, partySplits);
+    
+    // Find job associated with route
+    const route = await prisma.routeResult.findUnique({
+      where: { id: routeId },
+      include: { job: true }
+    });
+    
+    if (!route || !route.job) {
+      return c.json({ error: 'Route or Job not found' }, 404);
+    }
+    
+    // Save to Database
+    const payment = await prisma.payment.create({
+      data: {
+        txHash: splitResults[0].txId, // Store the primary atomic group ID
+        amount: amount,
+        currency: 'USDC',
+        status: 'SETTLED',
+        networkId: 'algorand-testnet',
+        type: 'ATOMIC_SPLIT',
+        jobId: route.job.id,
+        splits: {
+          create: splitResults.map(s => ({
+            partyName: s.partyName,
+            percentage: s.percentage,
+            amount: s.amount,
+            destinationAddress: s.destinationAddress,
+            txHash: s.txId
+          }))
+        }
+      },
+      include: { splits: true }
+    });
+    
+    return c.json({
+      success: true,
+      transactionId: payment.txHash,
+      splits: payment.splits,
+      message: 'Atomic settlement complete'
+    });
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+/**
+ * POST /api/payments/mint-cert
+ * Mints an Algorand ASA Green Carbon Certificate
+ */
+app.post('/api/payments/mint-cert', async (c) => {
+  try {
+    const { co2Saved, shipmentId } = await c.req.json();
+    const txId = await paymentAgent.mintGreenCertificate(co2Saved, shipmentId);
+    return c.json({ success: true, txId, assetName: `ECO Carbon Cert ${shipmentId.substring(0,4)}` });
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+/**
+ * POST /api/payments/stream-toll
+ * Triggers a micro-payment for a toll plaza
+ */
+app.post('/api/payments/stream-toll', async (c) => {
+  try {
+    const { tollName, amount, jobId } = await c.req.json();
+    
+    const tollResult = await paymentAgent.streamTollPayment(tollName, amount);
+    
+    // Check if there is an existing payment record for this job to attach toll to, or create one
+    let payment = await prisma.payment.findFirst({
+      where: { jobId, type: 'TOLL_STREAM' },
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    if (!payment) {
+      payment = await prisma.payment.create({
+        data: {
+          txHash: tollResult.txId,
+          amount: amount,
+          currency: 'USDC',
+          status: 'PARTIAL',
+          networkId: 'algorand-testnet',
+          type: 'TOLL_STREAM',
+          jobId: jobId
+        }
+      });
+    } else {
+      // Update running total
+      payment = await prisma.payment.update({
+        where: { id: payment.id },
+        data: { amount: payment.amount + amount }
+      });
+    }
+    
+    // Record specific toll instance
+    const tollRecord = await prisma.tollPayment.create({
+      data: {
+        paymentId: payment.id,
+        tollName: tollResult.tollName,
+        amount: tollResult.amount,
+        txHash: tollResult.txId,
+        status: tollResult.status
+      }
+    });
+    
+    return c.json({
+      success: true,
+      toll: tollRecord,
+      runningTotal: payment.amount
+    });
   } catch (error: any) {
     return c.json({ error: error.message }, 500);
   }

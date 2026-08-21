@@ -84,24 +84,26 @@ model IntermediateStop {
 }
 
 model OptimizationJob {
-  id              String         @id @default(uuid())
+  id              String            @id @default(uuid())
   shipmentId      String
-  shipment        Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
-  status          String         @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
-  costWeight      Float          @default(0.0)
-  timeWeight      Float          @default(0.0)
-  fuelWeight      Float          @default(0.0)
-  co2Weight       Float          @default(0.0)
-  tollWeight      Float          @default(0.0)
-  solver          String         @default("QAOA_SIMULATOR")
-  variables       Int            @default(0)
-  constraintsCount Int           @default(0)
+  shipment        Shipment          @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status          String            @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  costWeight      Float             @default(0.0)
+  timeWeight      Float             @default(0.0)
+  fuelWeight      Float             @default(0.0)
+  co2Weight       Float             @default(0.0)
+  tollWeight      Float             @default(0.0)
+  solver          String            @default("QAOA_SIMULATOR")
+  variables       Int               @default(0)
+  constraintsCount Int              @default(0)
   finalObjective  Float?
   routes          Route[]
   agentRuns       AgentRun[]
   payments        Payment[]
   constraints     Constraint[]
-  createdAt       DateTime       @default(now())
+  milestones      EscrowMilestone[]
+  tollPayments    TollPayment[]
+  createdAt       DateTime          @default(now())
 }
 
 model Route {
@@ -115,6 +117,7 @@ model Route {
   fuelConsumption Float              // in L
   fuelCost        Float              // in currency
   tollCost        Float              // in currency
+  tollGates       Json?              // JSON array of toll gates
   co2Emissions    Float              // in kg CO2
   totalCost       Float              // in currency
   score           Float              // objective value
@@ -154,10 +157,25 @@ model Payment {
   amount        Float                @default(0.05)
   asset         String               @default("USDC")
   network       String               @default("ALGORAND_TESTNET")
-  status        String               @default("UNPAID") // UNPAID, PEADING, PAID, FAILED
+  status        String               @default("UNPAID") // UNPAID, PENDING, PAID, FAILED
   transactionId String?              // Algorand transaction hash
   transactions  PaymentTransaction[]
+  splits        PaymentSplit[]
   createdAt     DateTime             @default(now())
+}
+
+model PaymentSplit {
+  id                 String   @id @default(uuid())
+  paymentId          String
+  payment            Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  partyName          String   // e.g. "Carrier Fleet Operator", "Carbon Offset Fund"
+  partyRole          String   // CARRIER, CARBON_FUND, TOLL_ESCROW, PROTOCOL_FEE
+  percentage         Float    // e.g. 85.0
+  amount             Float    // in USDC
+  destinationAddress String
+  txHash             String?
+  status             String   @default("SETTLED") // PENDING, SETTLED
+  createdAt          DateTime @default(now())
 }
 
 model PaymentTransaction {
@@ -171,6 +189,35 @@ model PaymentTransaction {
   timestamp DateTime @default(now())
 }
 
+model EscrowMilestone {
+  id              String          @id @default(uuid())
+  jobId           String
+  job             OptimizationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  title           String          // e.g. "Origin Check-in & Departure"
+  description     String
+  orderIndex      Int
+  percentage      Float           // e.g. 30.0
+  amount          Float           // in USDC
+  status          String          @default("LOCKED") // LOCKED, RELEASED, REFUNDED
+  releaseTxHash   String?
+  releaseTime     DateTime?
+  createdAt       DateTime        @default(now())
+}
+
+model TollPayment {
+  id        String          @id @default(uuid())
+  jobId     String
+  job       OptimizationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  tollName  String
+  lat       Float
+  lng       Float
+  amount    Float           // in USDC
+  asset     String          @default("USDC")
+  txHash    String
+  status    String          @default("SETTLED")
+  createdAt DateTime        @default(now())
+}
+
 model Constraint {
   id          String          @id @default(uuid())
   jobId       String
@@ -180,3 +227,4 @@ model Constraint {
   actualValue Float
   status      String          // PASS, FAIL
 }
+
