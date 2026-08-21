@@ -85,7 +85,7 @@ app.get('/api/vehicles', async (c) => {
     const vehicles = await prisma.vehicle.findMany();
     return c.json(vehicles);
   } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
@@ -103,7 +103,7 @@ app.get('/api/wallet/status', async (c) => {
       asset: 'USDC'
     });
   } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
@@ -174,7 +174,7 @@ app.get('/api/shipments/:id', async (c) => {
     if (!shipment) return c.json({ error: 'Shipment not found' }, 404);
     return c.json(shipment);
   } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
@@ -625,7 +625,7 @@ app.post('/api/optimize-route', async (c) => {
       where: { id: job.id },
       data: { status: 'FAILED' }
     });
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
@@ -677,7 +677,7 @@ app.post('/api/x402/payment', async (c) => {
       facilitatorSignature: verification.facilitatorSignature || 'sig_verified_x402_avm'
     });
   } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
@@ -725,7 +725,7 @@ app.post('/api/email/confirm-payment', async (c) => {
     });
   } catch (error: any) {
     console.error('Email dispatch failed:', error.message);
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
@@ -747,7 +747,7 @@ app.get('/api/optimization/:id/status', async (c) => {
     if (!job) return c.json({ error: 'Job not found' }, 404);
     return c.json(job);
   } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
@@ -775,7 +775,7 @@ app.get('/api/optimization/:id', async (c) => {
     if (!job) return c.json({ error: 'Job not found' }, 404);
     return c.json(job);
   } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
@@ -786,20 +786,61 @@ app.get('/api/optimization/:id', async (c) => {
 app.get('/api/payments', async (c) => {
   try {
     const payments = await prisma.payment.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        job: {
-          include: {
-            shipment: true
-          }
-        },
-        splits: true,
-        tolls: true,
-        escrow: true
-      }
+      orderBy: { createdAt: 'desc' }
     });
-    return c.json(payments);
+    
+    const splits = await prisma.paymentSplit.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    const tolls = await prisma.tollPayment.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    let ledger = [];
+    
+    payments.forEach(p => {
+      ledger.push({
+        id: p.id,
+        type: 'MACHINE_PAYMENT',
+        status: p.status,
+        txHash: p.transactionId || 'PENDING_HASH...',
+        createdAt: p.createdAt,
+        networkId: p.network,
+        amount: p.amount
+      });
+    });
+    
+    splits.forEach(s => {
+      ledger.push({
+        id: s.id,
+        type: 'ATOMIC_SPLIT',
+        status: s.status,
+        txHash: s.txHash || 'PENDING_HASH...',
+        createdAt: s.createdAt,
+        networkId: 'ALGORAND_TESTNET',
+        amount: s.amount
+      });
+    });
+    
+    tolls.forEach(t => {
+      ledger.push({
+        id: t.id,
+        type: 'TOLL_STREAM',
+        status: t.status,
+        txHash: t.txHash || 'PENDING_HASH...',
+        createdAt: t.createdAt,
+        networkId: 'ALGORAND_TESTNET',
+        amount: t.amount
+      });
+    });
+    
+    // Sort by newest first
+    ledger.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    return c.json(ledger);
   } catch (error: any) {
+    console.error("Dashboard error:", error);
     return c.json({ error: error.message }, 500);
   }
 });
@@ -864,7 +905,7 @@ app.post('/api/payments/split-settlement', async (c) => {
       message: 'Atomic settlement complete'
     });
   } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
@@ -878,7 +919,7 @@ app.post('/api/payments/mint-cert', async (c) => {
     const txId = await paymentAgent.mintGreenCertificate(co2Saved, shipmentId);
     return c.json({ success: true, txId, assetName: `ECO Carbon Cert ${shipmentId.substring(0,4)}` });
   } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
@@ -935,7 +976,7 @@ app.post('/api/payments/stream-toll', async (c) => {
       runningTotal: payment.amount
     });
   } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+    console.error("Dashboard error:", error); return c.json({ error: error.message }, 500);
   }
 });
 
