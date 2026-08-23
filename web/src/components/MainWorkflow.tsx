@@ -1811,7 +1811,7 @@ export default function MainWorkflow() {
               </div>
 
               {/* Lower Section: Transaction History */}
-              <FinancialLedger />
+              {/* <FinancialLedger /> */}
 
               <div className="pt-4 flex justify-end">
                   <button 
