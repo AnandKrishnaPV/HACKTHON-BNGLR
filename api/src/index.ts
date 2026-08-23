@@ -689,7 +689,7 @@ app.post('/api/email/confirm-payment', async (c) => {
   let payload: any = null;
   try {
     const body = await c.req.json();
-    const { email, jobId, txId, origin, destination, routeName, distance, duration, co2, totalCost, vehicleModel, finalObjective } = body;
+    const { email, jobId, txId, origin, destination, stops, tollGates, routeName, distance, duration, co2, totalCost, vehicleModel, finalObjective } = body;
 
     payload = {
       email: email || 'anandkrishnapv09@gmail.com',
@@ -707,7 +707,9 @@ app.post('/api/email/confirm-payment', async (c) => {
       co2: co2 || 26.77,
       totalCost: totalCost || 943.96,
       vehicleModel: vehicleModel || 'Mahindra Furio 14',
-      finalObjective: finalObjective || 0.8523
+      finalObjective: finalObjective || 0.8523,
+      stops: Array.isArray(stops) ? stops : [],
+      tollGates: Array.isArray(tollGates) ? tollGates : []
     };
 
     let result = { messageId: 'msg_' + Date.now(), success: true };

@@ -391,6 +391,8 @@ export default function MainWorkflow() {
       const payload = {
         origin,
         destination,
+        stops,
+        tollGates: recommendedRoute?.tollGates || [],
         cargoDescription: cargoDesc,
         cargoWeight,
         cargoVolume,
@@ -584,6 +586,10 @@ export default function MainWorkflow() {
     const curCo2 = recommendedRoute?.co2Emissions || 26.77;
     const curVehicle = selectedVehicleModel || 'Mahindra Furio 14';
     const curScore = Number(optimizationJob?.finalObjective || 0.8523).toFixed(4);
+    const curTolls = recommendedRoute?.tollGates || [
+      { name: 'NH Highway Plaza Gate 1', price: 61 },
+      { name: 'City Bypass Toll Gate 2', price: 67 }
+    ];
 
     return `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #ffffff; color: #1e293b; padding: 24px; border-radius: 12px;">
@@ -641,7 +647,7 @@ export default function MainWorkflow() {
           <div style="font-family: monospace; font-size: 11px; color: #2563eb; word-break: break-all; background: #eff6ff; padding: 8px; border-radius: 6px; border: 1px solid #bfdbfe; margin-top: 4px;">${curTx}</div>
         </div>
 
-        <div style="margin-top: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">Official Travel Route Report</div>
+        <div style="margin-top: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">Official Step-by-Step Travel Route Report</div>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 12px;">
           <div><span style="color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: 700;">Assigned Vehicle:</span> <strong style="display: block; color: #0f172a;">${curVehicle}</strong></div>
           <div><span style="color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: 700;">Total Distance:</span> <strong style="display: block; color: #0f172a;">${curDist} km</strong></div>
@@ -650,17 +656,52 @@ export default function MainWorkflow() {
         </div>
 
         <div style="margin-top: 16px; font-size: 12px;">
-          <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">A</div>
-            <div><strong style="color: #0f172a;">Departure Point</strong><div style="color: #64748b; font-size: 11px;">${curOrigin}</div></div>
+          <!-- Step 1: Origin -->
+          <div style="display: flex; align-items: flex-start; margin-bottom: 12px; position: relative;">
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: #166534; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">1</div>
+            <div>
+              <strong style="color: #0f172a; font-size: 13px;">Step 1: Fleet Origin & Departure</strong>
+              <div style="color: #64748b; font-size: 12px;">${curOrigin} • Assigned: ${curVehicle}</div>
+            </div>
           </div>
-          <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">✓</div>
-            <div><strong style="color: #0f172a;">Quantum Routing Protocol Engaged</strong><div style="color: #64748b; font-size: 11px;">Selected <strong>${curRoute}</strong> (Objective Score: ${curScore})</div></div>
-          </div>
+
+          <!-- Intermediate Waypoints / Stops -->
+          ${(stops && stops.length > 0) ? stops.map((stop, idx) => `
+            <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
+              <div style="width: 22px; height: 22px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">${idx + 2}</div>
+              <div>
+                <strong style="color: #0f172a; font-size: 13px;">Step ${idx + 2}: Waypoint Stop / Delivery Point</strong>
+                <div style="color: #64748b; font-size: 12px;">${stop} (Intermediate Dropoff/Pickup)</div>
+              </div>
+            </div>
+          `).join('') : `
+            <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
+              <div style="width: 22px; height: 22px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">2</div>
+              <div>
+                <strong style="color: #0f172a; font-size: 13px;">Step 2: Quantum Optimized Corridor</strong>
+                <div style="color: #64748b; font-size: 12px;">Proceeding via <strong>${curRoute}</strong> (Energy Score: ${curScore})</div>
+              </div>
+            </div>
+          `}
+
+          <!-- Toll Checkpoints -->
+          ${(curTolls && curTolls.length > 0) ? curTolls.map((toll) => `
+            <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
+              <div style="width: 22px; height: 22px; border-radius: 50%; background: #d97706; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">$</div>
+              <div>
+                <strong style="color: #0f172a; font-size: 13px;">Toll Gate Checkpoint Cleared</strong>
+                <div style="color: #64748b; font-size: 12px;">${toll.name} • Fee: ${toll.price || 50} USDC (Automated Smart RFID)</div>
+              </div>
+            </div>
+          `).join('') : ''}
+
+          <!-- Step Final: Destination -->
           <div style="display: flex; align-items: flex-start;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: #22c55e; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">B</div>
-            <div><strong style="color: #0f172a;">Destination / Arrival</strong><div style="color: #64748b; font-size: 11px;">${curDest}</div></div>
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">🏁</div>
+            <div>
+              <strong style="color: #0f172a; font-size: 13px;">Final Step: Destination & Unload</strong>
+              <div style="color: #64748b; font-size: 12px;">${curDest} • Est. Time: ${curDuration} mins (${curDist} km)</div>
+            </div>
           </div>
         </div>
 

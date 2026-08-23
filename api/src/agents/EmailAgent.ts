@@ -19,6 +19,8 @@ export interface EmailConfirmationPayload {
   vehicleModel?: string;
   finalObjective?: number;
   userName?: string;
+  stops?: string[];
+  tollGates?: { name: string; price: number; lat?: number; lng?: number }[];
 }
 
 export class EmailAgent {
@@ -141,9 +143,9 @@ export class EmailAgent {
         <div class="tx-hash">${payload.txId}</div>
       </div>
 
-      <div class="section-title">Official Travel Route Report</div>
+      <div class="section-title">Official Step-by-Step Travel Route Report</div>
       
-      <div class="grid" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+      <div class="grid" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
         <div class="col">
           <div class="label">Assigned Vehicle</div>
           <div class="value">${payload.vehicleModel || 'Standard Fleet Vehicle'}</div>
@@ -162,31 +164,57 @@ export class EmailAgent {
         </div>
       </div>
 
-      <div style="margin-top: 24px;">
+      <div style="margin-top: 16px;">
+        <!-- Step 1: Origin -->
         <div class="route-step">
-          <div class="route-icon">A</div>
+          <div class="route-icon" style="background: #166534;">1</div>
           <div class="route-line"></div>
           <div class="route-details">
-            <h4>Departure Point</h4>
-            <p>${payload.origin}</p>
+            <h4>Step 1: Fleet Origin & Departure</h4>
+            <p><strong>${payload.origin}</strong> • Vehicle dispatched: ${payload.vehicleModel || 'Mahindra Furio 14'}</p>
           </div>
         </div>
-        
-        <div class="route-step">
-          <div class="route-icon" style="background: #3b82f6;">✓</div>
-          <div class="route-line"></div>
-          <div class="route-details">
-            <h4>Quantum Routing Protocol Engaged</h4>
-            <p>Selected <strong>${payload.routeName}</strong> (Objective Score: ${Number(payload.finalObjective || 0.8523).toFixed(4)})</p>
+
+        <!-- Intermediate Stops -->
+        ${(payload.stops && payload.stops.length > 0) ? payload.stops.map((stop, idx) => `
+          <div class="route-step">
+            <div class="route-icon" style="background: #2563eb;">${idx + 2}</div>
+            <div class="route-line"></div>
+            <div class="route-details">
+              <h4>Step ${idx + 2}: Waypoint Stop / Delivery Checkpoint</h4>
+              <p><strong>${stop}</strong> • Intermediate cargo handling</p>
+            </div>
           </div>
-        </div>
-        
+        `).join('') : `
+          <div class="route-step">
+            <div class="route-icon" style="background: #2563eb;">2</div>
+            <div class="route-line"></div>
+            <div class="route-details">
+              <h4>Step 2: Quantum Optimized Highway Transit</h4>
+              <p>Proceeding via <strong>${payload.routeName}</strong> (QAOA Energy Score: ${Number(payload.finalObjective || 0.8523).toFixed(4)})</p>
+            </div>
+          </div>
+        `}
+
+        <!-- Toll Gates Checkpoints -->
+        ${(payload.tollGates && payload.tollGates.length > 0) ? payload.tollGates.map((toll) => `
+          <div class="route-step">
+            <div class="route-icon" style="background: #d97706; font-size: 11px;">$</div>
+            <div class="route-line"></div>
+            <div class="route-details">
+              <h4>Toll Clearance Checkpoint</h4>
+              <p><strong>${toll.name}</strong> • Smart Automated Settlement: ${toll.price || 50} USDC</p>
+            </div>
+          </div>
+        `).join('') : ''}
+
+        <!-- Final Step: Destination -->
         <div class="route-step">
-          <div class="route-icon">B</div>
+          <div class="route-icon" style="background: #0f172a;">🏁</div>
           <div class="route-line"></div>
           <div class="route-details">
-            <h4>Destination / Arrival</h4>
-            <p>${payload.destination}</p>
+            <h4>Final Step: Destination & Delivery Offload</h4>
+            <p><strong>${payload.destination}</strong> • Transit Time: ${payload.duration} mins (${Number(payload.distance || 0).toFixed(2)} km)</p>
           </div>
         </div>
       </div>
