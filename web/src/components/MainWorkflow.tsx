@@ -420,7 +420,7 @@ export default function MainWorkflow() {
         sender: accountAddress,
         receiver: qSwarmTreasury,
         amount: 200000, // 0.2 ALGO
-        note: new Uint8Array(Buffer.from("Q-Swarm x402 Optimization Fee")),
+        note: new TextEncoder().encode("Q-Swarm x402 Optimization Fee"),
         suggestedParams: params
       });
       
@@ -470,7 +470,7 @@ export default function MainWorkflow() {
       console.error('Payment Error:', err);
       setError(err?.message || "User rejected the transaction in Pera Wallet.");
       setPayStatus('idle');
-      updatePipelineStep('PAYMENT', 'failed', 'Payment rejected or failed. Cannot proceed to optimization.');
+      updatePipelineStep('PAYMENT', 'failed', `Payment Error: ${err?.message || err || 'Unknown'}`);
     }
   };
 
