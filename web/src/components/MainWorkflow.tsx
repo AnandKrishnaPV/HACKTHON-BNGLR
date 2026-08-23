@@ -513,10 +513,27 @@ export default function MainWorkflow() {
       
       updatePipelineStep('PAYMENT', 'running', `Payment sent from your wallet! Tx: ${txId.slice(0, 16)}... Verifying proof with GoPlausible Facilitator...`);
 
-      // 5. Submit signed transaction proof back to optimize-route via x402 header
+      // 5. Build proper x402 payment payload with signed transaction bytes
+      // The x402 AVM exact scheme expects a paymentGroup (array of base64-encoded signed txns)
+      const signedTxnBase64 = btoa(String.fromCharCode(...signedTxn[0]));
+      const x402PaymentPayload = {
+        x402Version: 1,
+        scheme: 'exact',
+        network: 'algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe',
+        payload: {
+          paymentGroup: [signedTxnBase64],
+          paymentIndex: 0
+        }
+      };
+      const x402PaymentHeader = btoa(JSON.stringify(x402PaymentPayload));
+
+      // 6. Submit signed transaction proof back to optimize-route via x402 headers
       const optRes = await axios.post(`${API_BASE_URL}/optimize-route`, 
         { jobId }, 
-        { headers: { 'X-402-Payment-Token': txId } }
+        { headers: { 
+          'X-Payment': x402PaymentHeader,
+          'X-402-Payment-Token': txId 
+        } }
       );
       
       setPayStatus('confirmed');
