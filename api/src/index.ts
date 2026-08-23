@@ -999,5 +999,6 @@ const port = parseInt(process.env.PORT || '8080');
 console.log(`Starting API server on port ${port}...`);
 serve({
   fetch: app.fetch,
+  hostname: "0.0.0.0",
   port
 });
