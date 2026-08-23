@@ -19,7 +19,7 @@ export class PaymentAgent {
     this.client = new algosdk.Algodv2('', nodeUrl, '');
     this.mnemonic = process.env.AGENT_WALLET_MNEMONIC;
     this.address = process.env.AGENT_WALLET_ADDRESS;
-    this.facilitatorUrl = process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.com';
+    this.facilitatorUrl = process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.xyz';
     this.priceUsdc = parseFloat(process.env.X402_PRICE || '0.05');
 
     if (this.mnemonic) {

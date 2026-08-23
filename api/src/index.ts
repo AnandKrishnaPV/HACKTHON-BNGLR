@@ -23,7 +23,7 @@ const app = new Hono();
 
 // Target receiving wallet for the x402 payments (configured in .env, fallback to standard Testnet address)
 const RECEIVER_ADDRESS = process.env.RECEIVER_ADDRESS || '5C4UKY2NYXCOC5VFGFTLBANBYDETRNSVOYTBTJDSMY4INMS6EVN6KXQNF4';
-const FACILITATOR_URL = process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.com';
+const FACILITATOR_URL = process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.xyz';
 
 // Initialize x402 Resource Server
 const facilitatorClient = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
@@ -445,7 +445,7 @@ app.post('/api/optimize-route', async (c) => {
   if (!paymentVerified && process.env.X402_STRICT_MODE === 'true') {
     // If strict mode is enabled and no valid payment was registered, fallback to manual 402 HTTP rejection.
     // Note: The @x402/hono middleware normally handles this natively.
-    const headers = `facilitator=${process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.com'}, receiver=${RECEIVER_ADDRESS}, amount=0.05, asset=USDC, network=testnet`;
+    const headers = `facilitator=${process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.xyz'}, receiver=${RECEIVER_ADDRESS}, amount=0.05, asset=USDC, network=testnet`;
     c.header('X-402-Payment-Required', headers);
     return c.json({ 
       error: 'Payment Required', 
@@ -641,7 +641,7 @@ app.get('/api/x402/info', async (c) => {
     asset: 'USDC',
     assetId: 10458941,
     standard: 'HTTP 402 Payment Required - Autonomous Agentic Settlement',
-    facilitatorUrl: process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.com',
+    facilitatorUrl: process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.xyz',
     receiverAddress: RECEIVER_ADDRESS,
     priceUsdc: 0.05,
     gasEstimateAlgo: 0.001,
@@ -673,7 +673,7 @@ app.post('/api/x402/payment', async (c) => {
       asset: 'ALGO',
       network: 'Algorand TestNet',
       receiver: RECEIVER_ADDRESS,
-      facilitator: process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.com',
+      facilitator: process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.xyz',
       facilitatorSignature: verification.facilitatorSignature || 'sig_verified_x402_avm'
     });
   } catch (error: any) {
