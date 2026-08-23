@@ -336,8 +336,8 @@ export class RouteAgent {
 
       return candidates;
     } catch (error: any) {
-      console.error('Routing failed:', error.response?.data || error.message);
-      throw new Error(`Routing Service failed: ${error.response?.data?.error?.message || error.message}`);
+      console.warn('OpenRouteService routing error, falling back to simulated candidates:', error.response?.data?.error?.message || error.message);
+      return this.generateSimulatedRoutes(origin, destination);
     }
   }
 }
