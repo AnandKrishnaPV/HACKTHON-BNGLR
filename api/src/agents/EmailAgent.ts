@@ -208,12 +208,7 @@ export class EmailAgent {
           from: process.env.EMAIL_FROM || '"Q-Swarm Logistics" <receipts@q-swarm.internal>',
           to: payload.email,
           subject: `[Verified Receipt] Route Optimization Confirmed - ${payload.routeName} (${payload.txId.slice(0, 8)})`,
-          html: html,
-          attachments: [{
-            filename: 'logo.jpg',
-            path: require('path').resolve(process.cwd(), '../web/public/logo.jpg'),
-            cid: 'qswarmlogo'
-          }]
+          html: html
         });
         return { success: true, messageId: info.messageId };
       } catch (err: any) {
