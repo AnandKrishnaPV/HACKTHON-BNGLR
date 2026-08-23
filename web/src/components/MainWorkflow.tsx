@@ -1391,11 +1391,17 @@ export default function MainWorkflow() {
                 <div className="pt-4 border-t border-slate-100">
                   {payStatus === 'idle' && (
                     <button 
-                      onClick={handlePayAndOptimize}
-                      className="w-full py-4 bg-brand-green hover:bg-brand-green/90 text-white font-bold rounded-xl shadow-lg shadow-brand-green/20 transition-all flex items-center justify-center space-x-2"
+                      onClick={() => {
+                        if (!accountAddress) {
+                          alert("Please connect your Pera Wallet (in the top right) to authenticate before executing the autonomous transaction.");
+                          return;
+                        }
+                        handlePayAndOptimize();
+                      }}
+                      className={`w-full py-4 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 ${!accountAddress ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-brand-green hover:bg-brand-green/90 text-white shadow-brand-green/20'}`}
                     >
                       <Zap className="w-4 h-4" />
-                      <span>EXECUTE x402 PAYMENT ($0.05 USDC)</span>
+                      <span>{!accountAddress ? 'CONNECT WALLET TO PROCEED' : 'EXECUTE x402 PAYMENT ($0.05 USDC)'}</span>
                     </button>
                   )}
 
