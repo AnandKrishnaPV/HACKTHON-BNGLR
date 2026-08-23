@@ -460,8 +460,13 @@ export default function MainWorkflow() {
           updatePipelineStep('VERIFICATION', 'success', `Route verified cryptographically against vehicle constraints.`);
           setPayStatus('confirmed');
           
-          const best = (optRes.data.routes || []).find((r: any) => r.isSelected) || candidateRoutes[0];
+          let optimizedRoutes = optRes.data.routes || candidateRoutes;
+          const best = optimizedRoutes.find((r: any) => r.isSelected) || candidateRoutes[0];
+          if (best && !optimizedRoutes.some((r: any) => r.isSelected)) {
+             optimizedRoutes = optimizedRoutes.map((r: any) => r.id === best.id ? {...r, isSelected: true} : r);
+          }
           if (best) setRecommendedRoute(best);
+          setMapRoutes(optimizedRoutes);
           setStep(7);
         }, 1200);
       }, 1500);
