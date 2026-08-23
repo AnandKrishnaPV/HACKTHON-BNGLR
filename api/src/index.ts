@@ -22,7 +22,7 @@ import { ALGORAND_TESTNET_CAIP2 } from '@x402/avm';
 const app = new Hono();
 
 // Target receiving wallet for the x402 payments (configured in .env, fallback to standard Testnet address)
-const RECEIVER_ADDRESS = process.env.RECEIVER_ADDRESS || 'GD64WT2C46HI6625V55V55V55V55V55V55V55V55V55V55V55V55V55V55';
+const RECEIVER_ADDRESS = process.env.RECEIVER_ADDRESS || '5C4UKY2NYXCOC5VFGFTLBANBYDETRNSVOYTBTJDSMY4INMS6EVN6KXQNF4';
 const FACILITATOR_URL = process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.com';
 
 // Initialize x402 Resource Server

@@ -57,7 +57,7 @@ export class PaymentAgent {
       return {
         algo: 4.892,
         usdc: 25.50,
-        address: 'GD64WT2C46HI6625V55V55V55V55V55V55V55V55V55V55V55V55V55',
+        address: '5C4UKY2NYXCOC5VFGFTLBANBYDETRNSVOYTBTJDSMY4INMS6EVN6KXQNF4',
         connected: true
       };
     }

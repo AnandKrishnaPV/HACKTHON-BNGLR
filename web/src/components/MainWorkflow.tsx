@@ -415,7 +415,7 @@ export default function MainWorkflow() {
       const params = await algodClient.getTransactionParams().do();
       
       // 2. Construct Payment Transaction to Q-Swarm Treasury
-      const qSwarmTreasury = "GD64WT2C46HI6625V55V55V55V55V55V55V55V55V55V55V55V55V55V55";
+      const qSwarmTreasury = "5C4UKY2NYXCOC5VFGFTLBANBYDETRNSVOYTBTJDSMY4INMS6EVN6KXQNF4";
       const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
         sender: accountAddress,
         receiver: qSwarmTreasury,
@@ -1389,7 +1389,7 @@ export default function MainWorkflow() {
                     {showProtocolInspector && (
                       <div className="mt-3 p-3 bg-slate-950 text-slate-300 font-mono text-[10px] rounded-xl border border-slate-800 space-y-2 overflow-x-auto">
                         <p className="text-brand-orange font-bold">HTTP/1.1 402 Payment Required</p>
-                        <p className="text-slate-400">X-402-Payment-Required: facilitator=https://facilitator.goplausible.com, receiver={accountAddress || "GD64WT2C46HI6625V55V55V55V55V55V55V55V55V55V55V55V55V55V55"}, amount=0.05, asset=USDC, assetId=10458941, network=Algorand-TestNet</p>
+                        <p className="text-slate-400">X-402-Payment-Required: facilitator=https://facilitator.goplausible.com, receiver={accountAddress || "5C4UKY2NYXCOC5VFGFTLBANBYDETRNSVOYTBTJDSMY4INMS6EVN6KXQNF4"}, amount=0.05, asset=USDC, assetId=10458941, network=Algorand-TestNet</p>
                         <p className="text-slate-400">WWW-Authenticate: x402 token_type="AVM-USDC"</p>
                         {txHash && (
                           <p className="text-brand-green font-bold pt-1 border-t border-slate-800">
