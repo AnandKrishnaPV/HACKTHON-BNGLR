@@ -656,7 +656,7 @@ app.get('/api/x402/info', async (c) => {
  */
 app.post('/api/x402/payment', async (c) => {
   try {
-    const { jobId } = await c.req.json();
+    const { jobId, receiverAddress } = await c.req.json();
     if (!jobId) return c.json({ error: 'jobId is required' }, 400);
 
     // Run AVM Transaction
