@@ -282,11 +282,7 @@ export default function MainWorkflow() {
       const res = await axios.get(`${API_BASE_URL}/vehicles`);
       setVehicles(res.data);
       // Pick default: prefer a light truck, otherwise first in list
-      const initial = res.data.find((v: any) => v.model === 'Furio 14') || res.data[0];
-      if (initial) {
-        setVehicleSpecs(initial);
-        setSelectedVehicleModel(initial.model); // ensure selectedVehicleModel is never empty
-      }
+      // Vehicles loaded successfully. User must explicitly select one.
     } catch (err: any) {
       console.error('Failed to fetch vehicles:', err);
     }
