@@ -464,25 +464,12 @@ export default function MainWorkflow() {
   // Temporary state for 2-step verification
   const [tempGoogleProfile, setTempGoogleProfile] = useState<any>(null);
 
-  const handleGoogleAuth = async () => {
+    const handleGoogleAuth = async () => {
     try {
       setIsLoggingIn(true);
       setLoginError(null);
-      const res = await loginWithGoogle();
-      
-      // Store the Google auth result temporarily, do not close modal yet.
-      setTempGoogleProfile({
-        email: res.email,
-        name: res.name,
-        photoURL: res.photoURL
-      });
-      
-      // Initialize reCAPTCHA for the next step (Phone Auth)
-      await setupRecaptcha('recaptcha-container');
-      
-      // Move to phone verification step
-      setLoginMethod('phone');
-      setLoginError('Google authenticated successfully. Now verify your mobile number.');
+      await loginWithGoogle(); // onAuthStateChanged will handle setting the profile
+      setShowLoginModal(false);
     } catch (err: any) {
       console.error('Google Sign In failed:', err);
       setLoginError(err.message);
@@ -491,66 +478,8 @@ export default function MainWorkflow() {
     }
   };
 
-  const handleSendOTP = async () => {
-    if (!phoneNumber || phoneNumber.length < 10) {
-      setLoginError('Please enter a valid mobile number with country code (e.g. +1).');
-      return;
-    }
-    try {
-      setIsLoggingIn(true);
-      setLoginError(null);
-      
-      // Format number basic fallback (ensure + prefix if missing)
-      const formattedNumber = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
-      
-      const confirmationResult = await sendPhoneOTP(formattedNumber);
-      window.confirmationResult = confirmationResult;
-      
-      setLoginMethod('otp');
-    } catch (err: any) {
-      setLoginError(err.message);
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    if (!otpCode || otpCode.length !== 6) {
-      setLoginError('Please enter the 6-digit OTP code.');
-      return;
-    }
-    try {
-      setIsLoggingIn(true);
-      setLoginError(null);
-      
-      if (!window.confirmationResult) {
-        throw new Error('Session expired. Please try sending OTP again.');
-      }
-      
-      await window.confirmationResult.confirm(otpCode);
-      
-      // If we had a Google profile in temp state, use it. Otherwise use phone info.
-      const finalEmail = tempGoogleProfile ? tempGoogleProfile.email : `${phoneNumber.replace(/[^0-9]/g, '')}@verified-mobile.com`;
-      const finalName = tempGoogleProfile ? tempGoogleProfile.name : `Verified Mobile User`;
-      const finalPhoto = tempGoogleProfile ? tempGoogleProfile.photoURL : undefined;
-      
-      setUserProfile({
-        email: finalEmail,
-        name: finalName,
-        photoURL: finalPhoto,
-        phoneNumber: phoneNumber
-      });
-      
-      setEmailInput(finalEmail);
-      setShowLoginModal(false);
-      setTempGoogleProfile(null);
-    } catch (err: any) {
-      setLoginError(err.message || 'Invalid OTP code.');
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
+  
+  
   const handleSignOut = async () => {
     await logoutUser();
     setUserProfile(null);
@@ -637,13 +566,13 @@ export default function MainWorkflow() {
 
     // Preset selection
     if (command.includes('eco') || command.includes('green') || command.includes('carbon')) {
-      handlePresetChange('Eco-Friendly');
+      handlePresetSelect('Eco-Friendly', { cost: 10, time: 20, fuel: 35, co2: 35, tolls: 0 });
       if (step < 5) setStep(5);
     } else if (command.includes('fast') || command.includes('quick') || command.includes('time')) {
-      handlePresetChange('Time-Critical');
+      handlePresetSelect('Fastest', { cost: 10, time: 60, fuel: 10, co2: 10, tolls: 10 });
       if (step < 5) setStep(5);
     } else if (command.includes('cheap') || command.includes('cost')) {
-      handlePresetChange('Cost-Optimal');
+      handlePresetSelect('Cheapest', { cost: 50, time: 10, fuel: 15, co2: 5, tolls: 20 });
       if (step < 5) setStep(5);
     }
   };
@@ -1954,7 +1883,6 @@ export default function MainWorkflow() {
                 </div>
               )}
 
-              
               {loginMethod === 'select' && (
                 <div className="space-y-4">
                   <p className="text-sm text-slate-600 mb-4 text-center">Sign in securely using your email provider to access the Q-Swarm platform.</p>
@@ -1970,54 +1898,6 @@ export default function MainWorkflow() {
                 </div>
               )}
 
-
-              
-                      placeholder="+15550000000"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 transition-all text-slate-700"
-                    />
-                  </div>
-                  
-                  <button
-                    onClick={handleSendOTP}
-                    disabled={isLoggingIn || !phoneNumber}
-                    className="w-full flex items-center justify-center space-x-2 p-4 bg-brand-green hover:bg-brand-green/90 text-white font-bold rounded-xl shadow-sm transition-all disabled:opacity-50 mt-4"
-                  >
-                    {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                    <span>{isLoggingIn ? 'Sending OTP...' : 'Send OTP'}</span>
-                  </button>
-                  <button
-                    onClick={() => { setLoginMethod('select'); setLoginError(null); setTempGoogleProfile(null); }}
-                    className="w-full text-center text-xs text-slate-500 hover:text-slate-700 mt-2 font-semibold"
-                  >
-                    Cancel and go back
-                  </button>
-                </div>
-              )}
-
-              
-                      placeholder="123456"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 transition-all text-slate-700 text-center text-2xl tracking-widest font-mono"
-                    />
-                  </div>
-                  <button
-                    onClick={handleVerifyOTP}
-                    disabled={isLoggingIn || otpCode.length !== 6}
-                    className="w-full flex items-center justify-center space-x-2 p-4 bg-brand-blue hover:bg-brand-blue/90 text-white font-bold rounded-xl shadow-sm transition-all disabled:opacity-50 mt-4"
-                  >
-                    {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-                    <span>{isLoggingIn ? 'Verifying...' : 'Verify Code'}</span>
-                  </button>
-                  <button
-                    onClick={() => { setLoginMethod('phone'); setOtpCode(''); setLoginError(null); }}
-                    className="w-full text-center text-xs text-slate-500 hover:text-slate-700 mt-2 font-semibold"
-                  >
-                    Change phone number
-                  </button>
-                </div>
-              )}
-              
-              {/* Invisible reCAPTCHA container - MUST be outside conditionals to exist in DOM for setupRecaptcha */}
-              <div id="recaptcha-container"></div>
 
             </div>
           </div>
