@@ -383,7 +383,7 @@ export default function MainWorkflow() {
       updatePipelineStep('VEHICLE', 'success', `Seeded vehicle specs loaded. Weight capacity checked.`);
       updatePipelineStep('ROUTE', 'success', `Generated ${res.data.routes.length} candidate alternatives using routing API.`);
 
-      setStep(7);
+      setStep(6);
     } catch (err: any) {
       setError(err.response?.data?.error || err.message);
       updatePipelineStep('ROUTE', 'failed', err.message);
@@ -564,7 +564,7 @@ export default function MainWorkflow() {
       if (command.includes('cargo')) setStep(3);
       if (command.includes('vehicle')) setStep(4);
       if (command.includes('preference') || command.includes('weight')) setStep(5);
-      if (command.includes('payment')) setStep(7);
+      if (command.includes('payment')) setStep(6);
     }
     
     // Route setting
