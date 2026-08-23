@@ -133,7 +133,7 @@ export class EmailAgent {
         <span class="grid-label">Calculated Operating Cost</span>
         <span class="grid-value" style="color: #457B36; font-weight: 800;">₹${payload.totalCost.toLocaleString()}</span>
       </div>
-      ${payload.finalObjective !== undefined ? `
+      ${payload.finalObjective != null ? `
       <div class="grid-row">
         <span class="grid-label">QAOA Quantum Objective Score</span>
         <span class="grid-value" style="color: #2563eb; font-family: monospace;">${payload.finalObjective.toFixed(4)}</span>
