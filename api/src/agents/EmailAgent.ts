@@ -25,16 +25,19 @@ export class EmailAgent {
   private transporter: nodemailer.Transporter | null = null;
 
   constructor() {
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    const user = process.env.SMTP_USER || process.env.EMAIL_USER || 'anandkrishnapv09@gmail.com';
+    const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS || 'wewuxhsdhazlcuji';
+
+    try {
       this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true',
+        service: 'gmail',
         auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
+          user: user,
+          pass: pass,
         },
       });
+    } catch (e: any) {
+      console.warn('Failed to initialize nodemailer transporter:', e.message);
     }
   }
 
@@ -205,7 +208,7 @@ export class EmailAgent {
     if (this.transporter) {
       try {
         const info = await this.transporter.sendMail({
-          from: process.env.EMAIL_FROM || '"Q-Swarm Logistics" <receipts@q-swarm.internal>',
+          from: process.env.EMAIL_FROM || '"Q-Swarm Logistics" <anandkrishnapv09@gmail.com>',
           to: payload.email,
           subject: `[Verified Receipt] Route Optimization Confirmed - ${payload.routeName} (${(payload.txId || 'TX_ALGORAND_TESTNET').slice(0, 8)})`,
           html: html
