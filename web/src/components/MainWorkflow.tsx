@@ -689,21 +689,7 @@ export default function MainWorkflow() {
             )}
           </div>
 
-          {walletStatus && (
-            <div className="hidden md:flex items-center space-x-3 text-xs bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
-              <div className="flex items-center space-x-1">
-                <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
-                <span className="text-slate-400">Agent Wallet:</span>
-              </div>
-              <span className="font-mono text-brand-green font-semibold">
-                {walletStatus.agentWallet.usdc.toFixed(2)} USDC
-              </span>
-              <span className="text-white/20">|</span>
-              <span className="text-slate-300 font-mono text-[10px]">
-                {String(walletStatus.agentWallet.address || '').slice(0, 6)}...{String(walletStatus.agentWallet.address || '').slice(-6)}
-              </span>
-            </div>
-          )}
+          
           
           <button 
             onClick={handleGoToDashboard}
