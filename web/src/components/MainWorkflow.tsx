@@ -166,13 +166,10 @@ export default function MainWorkflow() {
   // Firebase Auth state
   const [peraWallet, setPeraWallet] = useState<any>(null);
   const [accountAddress, setAccountAddress] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<{ email: string; name: string; photoURL?: string; phoneNumber?: string } | null>({
-    email: 'anandkrishnapv09@gmail.com',
-    name: 'Anand Krishna PV'
-  });
+  const [userProfile, setUserProfile] = useState<{ email: string; name: string; photoURL?: string; phoneNumber?: string } | null>(null);
 
   // Email confirmation states
-  const [emailInput, setEmailInput] = useState<string>('anandkrishnapv09@gmail.com');
+  const [emailInput, setEmailInput] = useState<string>('');
   const [emailSending, setEmailSending] = useState<boolean>(false);
   const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'failed'>('idle');
   const [emailError, setEmailError] = useState<string | null>(null);
