@@ -403,7 +403,7 @@ export default function MainWorkflow() {
       // 1. Send payment request to backend to execute TestNet transactions
       updatePipelineStep('PAYMENT', 'running', 'Executing autonomous machine-to-machine payment on Algorand TestNet (Asset #10458941 - USDC)...');
       
-      const payRes = await axios.post(`${API_BASE_URL}/x402/payment`, { jobId });
+      const payRes = await axios.post(`${API_BASE_URL}/x402/payment`, { jobId, receiverAddress: accountAddress });
       const payData = payRes.data;
       const hash = payData.txId;
       setTxHash(hash);

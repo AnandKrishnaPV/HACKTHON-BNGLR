@@ -344,7 +344,7 @@ app.post('/api/routes/candidates', async (c) => {
  * Protected optimization API. Returns 402 if unpaid, executes optimization if paid.
  */
 app.post('/api/optimize-route', async (c) => {
-  const { jobId } = await c.req.json();
+  const { jobId, receiverAddress } = await c.req.json();
   
   if (!jobId) {
     return c.json({ error: 'jobId is required' }, 400);
@@ -660,7 +660,7 @@ app.post('/api/x402/payment', async (c) => {
     if (!jobId) return c.json({ error: 'jobId is required' }, 400);
 
     // Run AVM Transaction
-    const result = await paymentAgent.makeUSDCConnectionPayment(RECEIVER_ADDRESS, 0.05);
+    const result = await paymentAgent.makeUSDCConnectionPayment(receiverAddress || RECEIVER_ADDRESS, 0.05);
     const verification = await paymentAgent.registerPaymentWithFacilitator(result.txId);
     
     return c.json({
