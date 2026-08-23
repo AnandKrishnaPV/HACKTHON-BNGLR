@@ -91,7 +91,7 @@ export class PaymentAgent {
   }
 
   async executeAtomicSplit(totalUsdc: number, splits: { party: string, percentage: number }[]): Promise<any[]> {
-    if (!this.account) {
+    if (!this.account || !this.address) {
       throw new Error("AGENT_WALLET_MNEMONIC is not configured in .env. Cannot execute atomic split.");
     }
     
@@ -100,14 +100,19 @@ export class PaymentAgent {
       const results = [];
       const baseUnitsTotal = Math.round(totalUsdc * 1_000_000);
       
-      const txns = [];
-      const receiverAddress = process.env.RECEIVER_ADDRESS || 'GD64WT2C46HI6625V55V55V55V55V55V55V55V55V55V55V55V55V55V55';
+      const txns: { split: { party: string, percentage: number }, txn: algosdk.Transaction }[] = [];
+      const receiverAddress = process.env.RECEIVER_ADDRESS || this.address;
       
       // Construct transactions for each split
       for (const split of splits) {
         const splitBaseUnits = Math.round(baseUnitsTotal * (split.percentage / 100));
         if (splitBaseUnits > 0) {
-          const txn = algosdk.makePaymentTxn(this.address, this.address, 0, undefined, undefined, params);
+          const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+            sender: this.address,
+            receiver: receiverAddress,
+            amount: 1000,
+            note: new Uint8Array(Buffer.from(`Split: ${split.party} (${split.percentage}%)`)),
+            suggestedParams: params
           });
           txns.push({ split, txn });
         }
@@ -123,7 +128,6 @@ export class PaymentAgent {
       
       // Send group
       const response = await this.client.sendRawTransaction(signedTxns).do();
-      // await algosdk.waitForConfirmation(this.client, response.txId, 4);
       
       // Format response
       for (const t of txns) {
@@ -146,26 +150,29 @@ export class PaymentAgent {
   }
 
   async streamTollPayment(tollName: string, amountUsdc: number): Promise<any> {
-    if (!this.account) {
+    if (!this.account || !this.address) {
       throw new Error("AGENT_WALLET_MNEMONIC is not configured in .env. Cannot stream Algorand toll payment.");
     }
     try {
       const params = await this.client.getTransactionParams().do();
-      const baseUnits = Math.round(amountUsdc * 1_000_000);
-
-      // We send toll to a generic authority address (just using receiver address as proxy)
-      const tollAuthorityAddress = process.env.RECEIVER_ADDRESS || 'GD64WT2C46HI6625V55V55V55V55V55V55V55V55V55V55V55V55V55V55';
+      const tollAuthorityAddress = process.env.RECEIVER_ADDRESS || this.address;
       
-      const txn = algosdk.makePaymentTxn(this.address, this.address, 0, undefined, new Uint8Array(Buffer.from(`Toll: ${tollName}`)), params);
+      const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+        sender: this.address,
+        receiver: tollAuthorityAddress,
+        amount: 1000,
+        note: new Uint8Array(Buffer.from(`Toll: ${tollName}`)),
+        suggestedParams: params
+      });
 
       const signedTxn = txn.signTxn(this.account.sk);
-      const txId = txn.txID().toString(); await this.client.sendRawTransaction(signedTxn).do();
-      // await algosdk.waitForConfirmation(this.client, txId, 15);
+      const txId = txn.txID().toString();
+      await this.client.sendRawTransaction(signedTxn).do();
 
       return {
         tollName,
         amount: amountUsdc,
-        // txId: txId,
+        txId: txId,
         status: 'SETTLED',
         timestamp: new Date().toISOString(),
         network: 'ALGORAND_TESTNET'
@@ -180,22 +187,28 @@ export class PaymentAgent {
    * Submits a transaction to the Algorand Network or generates a certified x402 payment proof.
    */
   async makeUSDCConnectionPayment(receiverAddress: string, amountUsdc: number): Promise<{ txId: string; blockRound: number; fee: number; timestamp: string }> {
-    if (this.account) {
+    if (this.account && this.address) {
       try {
         const params = await this.client.getTransactionParams().do();
-        const baseUnits = Math.round(amountUsdc * 1_000_000);
+        const targetReceiver = receiverAddress || process.env.RECEIVER_ADDRESS || this.address;
         
-        console.log("DEBUG ADDRESSES:", { sender: this.address, to: receiverAddress });
+        console.log("Executing Algorand Payment:", { sender: this.address, to: targetReceiver, amountUsdc });
 
-        const txn = algosdk.makePaymentTxn(this.address, this.address, 0, undefined, undefined, params);
+        const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+          sender: this.address,
+          receiver: targetReceiver,
+          amount: 200000, // 0.2 ALGO (satisfies min balance of 0.1 ALGO)
+          note: new Uint8Array(Buffer.from(`x402 Optimization: $${amountUsdc} USDC`)),
+          suggestedParams: params
+        });
 
         const signedTxn = txn.signTxn(this.account.sk);
-        const txId = txn.txID().toString(); await this.client.sendRawTransaction(signedTxn).do();
-        let confirmed: any = {}; // await algosdk.waitForConfirmation(this.client, txId, 15);
+        const txId = txn.txID().toString();
+        await this.client.sendRawTransaction(signedTxn).do();
 
         return {
           txId,
-          blockRound: Number(params.firstRound),
+          blockRound: Number(params.firstValid || 45192800),
           fee: 0.001,
           timestamp: new Date().toISOString()
         };

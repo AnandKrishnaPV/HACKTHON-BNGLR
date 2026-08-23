@@ -19,8 +19,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 const MapComponent = dynamic(() => import('./MapComponent'), { ssr: false });
 import { VoiceCopilot, QuantumVisualizer, GreenCertificateMint } from './new_ui';
 
-// We use a relative path so Next.js can proxy it to the backend via rewrites in next.config.ts
-const API_BASE_URL = 'http://localhost:8081/api';
+// API Base URL - configurable for Vercel/Production deployment
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
 
 interface Vehicle {
   id: string;

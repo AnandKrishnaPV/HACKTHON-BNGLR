@@ -12,5 +12,6 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+console.log("db.ts initialized");
 export { prisma, pool };
 export default prisma;
