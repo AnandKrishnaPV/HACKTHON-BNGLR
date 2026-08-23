@@ -460,8 +460,7 @@ export default function MainWorkflow() {
           updatePipelineStep('VERIFICATION', 'success', `Route verified cryptographically against vehicle constraints.`);
           setPayStatus('confirmed');
           
-          const selectedId = optRes.data.selectedRouteId;
-          const best = candidateRoutes.find((r: any) => r.id === selectedId);
+          const best = (optRes.data.routes || []).find((r: any) => r.isSelected) || candidateRoutes[0];
           if (best) setRecommendedRoute(best);
           setStep(7);
         }, 1200);
