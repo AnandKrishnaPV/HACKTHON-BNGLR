@@ -503,7 +503,7 @@ app.post('/api/optimize-route', async (c) => {
       await prisma.route.update({
         where: { id: route.id },
         data: {
-          score: optResult.metrics.score,
+          score: optResult.metrics?.score || optResult.finalObjective || 0.5,
           isSelected: isSelected
         }
       });
