@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import LocationAutocomplete from './LocationAutocomplete';
-import { loginWithGoogle, logoutUser, auth, setupRecaptcha, sendPhoneOTP } from '../lib/firebase';
+import { loginWithGoogle, logoutUser, auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 // Dynamically import MapComponent to disable SSR
@@ -1957,30 +1957,11 @@ export default function MainWorkflow() {
                 </div>
               )}
 
+              
               {loginMethod === 'select' && (
                 <div className="space-y-4">
-                  <button
-                    onClick={async () => { 
-                      try {
-                        await setupRecaptcha('recaptcha-container');
-                        setLoginMethod('phone'); 
-                        setLoginError(null); 
-                      } catch (err) {
-                        console.error(err);
-                      }
-                    }}
-                    className="w-full flex items-center justify-center space-x-3 p-4 bg-brand-green/10 hover:bg-brand-green/20 text-brand-green font-bold rounded-xl border border-brand-green/30 transition-all"
-                  >
-                    <Phone className="w-5 h-5" />
-                    <span>Sign In with Mobile</span>
-                  </button>
+                  <p className="text-sm text-slate-600 mb-4 text-center">Sign in securely using your email provider to access the Q-Swarm platform.</p>
                   
-                  <div className="relative flex py-2 items-center">
-                    <div className="flex-grow border-t border-slate-200"></div>
-                    <span className="flex-shrink-0 mx-4 text-slate-400 text-xs font-semibold uppercase">Or</span>
-                    <div className="flex-grow border-t border-slate-200"></div>
-                  </div>
-
                   <button
                     onClick={handleGoogleAuth}
                     disabled={isLoggingIn}
@@ -1992,15 +1973,8 @@ export default function MainWorkflow() {
                 </div>
               )}
 
-              {loginMethod === 'phone' && (
-                <div className="space-y-4 animate-slide-up">
-                  <p className="text-sm text-slate-600 mb-4">Enter your mobile number (with country code) to receive a secure OTP code.</p>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Mobile Number</label>
-                    <input 
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
+
+              
                       placeholder="+15550000000"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 transition-all text-slate-700"
                     />
@@ -2023,16 +1997,7 @@ export default function MainWorkflow() {
                 </div>
               )}
 
-              {loginMethod === 'otp' && (
-                <div className="space-y-4 animate-slide-up">
-                  <p className="text-sm text-slate-600 mb-4">Enter the 6-digit code sent to <span className="font-bold text-slate-800">{phoneNumber}</span> <br/><span className="text-xs text-brand-green font-semibold italic">(Demo Hint: Use 123456)</span></p>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Verification Code</label>
-                    <input 
-                      type="text"
-                      maxLength={6}
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value)}
+              
                       placeholder="123456"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 transition-all text-slate-700 text-center text-2xl tracking-widest font-mono"
                     />

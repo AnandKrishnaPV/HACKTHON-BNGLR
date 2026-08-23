@@ -15,7 +15,7 @@ export default function GreenCertificateMint({ co2Saved, shipmentId }: Props) {
   const handleMint = async () => {
     setMintStatus('minting');
     try {
-      const res = await axios.post('http://localhost:8081/api/payments/mint-cert', {
+      const res = await axios.post('/api/payments/mint-cert', {
         co2Saved,
         shipmentId
       });
