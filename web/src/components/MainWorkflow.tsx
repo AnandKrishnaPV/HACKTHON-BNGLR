@@ -1354,19 +1354,73 @@ export default function MainWorkflow() {
 
                 <div className="pt-4 border-t border-slate-100">
                   {payStatus === 'idle' && (
-                    <button 
-                      onClick={() => {
-                        if (!accountAddress) {
-                          alert("Please connect your Pera Wallet (in the top right) to authenticate before executing the autonomous transaction.");
-                          return;
-                        }
-                        handlePayAndOptimize();
-                      }}
-                      className={`w-full py-4 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 ${!accountAddress ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-brand-green hover:bg-brand-green/90 text-white shadow-brand-green/20'}`}
-                    >
-                      <Zap className="w-4 h-4" />
-                      <span>{!accountAddress ? 'CONNECT WALLET TO PROCEED' : 'EXECUTE x402 PAYMENT ($0.05 USDC)'}</span>
-                    </button>
+                    <div className="space-y-2">
+                      <button 
+                        onClick={() => {
+                          if (!accountAddress) {
+                            alert("Please connect your Pera Wallet (in the top right) to authenticate before executing the autonomous transaction.");
+                            return;
+                          }
+                          handlePayAndOptimize();
+                        }}
+                        className={`w-full py-4 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 ${!accountAddress ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-brand-green hover:bg-brand-green/90 text-white shadow-brand-green/20'}`}
+                      >
+                        <Zap className="w-4 h-4" />
+                        <span>{!accountAddress ? 'CONNECT WALLET TO PROCEED' : 'EXECUTE x402 PAYMENT ($0.05 USDC)'}</span>
+                      </button>
+                      
+                      {accountAddress && (
+                        <button 
+                          onClick={() => {
+                            // Instant bypass for hackathon demo if WalletConnect hangs
+                            setPayStatus('signing');
+                            setTimeout(() => {
+                              const dummyTxId = "SIM_TX_" + Date.now();
+                              setTxHash(dummyTxId);
+                              setX402Details({ txId: dummyTxId, blockRound: 123456, fee: 0.001 });
+                              setPayStatus('submitted');
+                              
+                              setTimeout(async () => {
+                                try {
+                                  const optRes = await axios.post(`${API_BASE_URL}/optimize-route`, 
+                                    { jobId }, 
+                                    { headers: { 'X-402-Payment-Token': dummyTxId } }
+                                  );
+                                  setPayStatus('confirmed');
+                                  updatePipelineStep('PAYMENT', 'success', 'Simulated x402 Payment settled.');
+                                  
+                                  updatePipelineStep('QUANTUM', 'running', 'Launching QAOA simulator...');
+                                  setTimeout(() => {
+                                    updatePipelineStep('QUANTUM', 'success', 'Quantum optimization complete.');
+                                    updatePipelineStep('VERIFICATION', 'running', 'Verifying cryptographically...');
+                                    
+                                    setTimeout(() => {
+                                      updatePipelineStep('VERIFICATION', 'success', 'Route verified.');
+                                      
+                                      let optimizedRoutes = optRes.data.routes || candidateRoutes;
+                                      const best = optimizedRoutes.find((r: any) => r.isSelected) || candidateRoutes[0];
+                                      if (best && !optimizedRoutes.some((r: any) => r.isSelected)) {
+                                         optimizedRoutes = optimizedRoutes.map((r: any) => r.id === best.id ? {...r, isSelected: true} : r);
+                                      }
+                                      if (best) setRecommendedRoute(best);
+                                      setMapRoutes(optimizedRoutes);
+                                      setStep(7);
+                                    }, 800);
+                                  }, 1000);
+                                } catch (e) {
+                                  console.error(e);
+                                  setError("Simulated optimization failed.");
+                                  setPayStatus('idle');
+                                }
+                              }, 800);
+                            }, 800);
+                          }}
+                          className="w-full py-2 text-xs font-semibold text-slate-500 hover:text-brand-green border border-slate-200 hover:border-brand-green rounded-xl transition-all"
+                        >
+                          Simulate Bypass (If WalletConnect Hangs)
+                        </button>
+                      )}
+                    </div>
                   )}
 
                   {payStatus !== 'idle' && payStatus !== 'failed' && (

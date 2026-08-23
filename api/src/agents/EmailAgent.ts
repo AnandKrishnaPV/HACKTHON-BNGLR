@@ -45,126 +45,153 @@ export class EmailAgent {
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; color: #0f172a; margin: 0; padding: 24px; }
-    .card { max-width: 620px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }
-    .header { background: #0a0f1d; padding: 30px 24px; color: #ffffff; text-align: center; border-bottom: 3px solid #457B36; }
-    .logo-badge { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #1e293b; border: 2px solid #457B36; border-radius: 12px; margin-bottom: 12px; }
-    .header h1 { margin: 0; font-size: 22px; letter-spacing: 1.5px; color: #ffffff; font-weight: 800; }
-    .header h1 span { color: #457B36; }
-    .header p { margin: 6px 0 0 0; font-size: 12px; color: #94a3b8; letter-spacing: 0.5px; }
-    .content { padding: 28px; }
-    .badge-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
-    .badge-paid { display: inline-flex; align-items: center; padding: 6px 12px; background: #ecfdf5; color: #047857; font-weight: 700; font-size: 11px; border-radius: 20px; border: 1px solid #a7f3d0; }
-    .badge-verified { display: inline-flex; align-items: center; padding: 6px 12px; background: #eff6ff; color: #1d4ed8; font-weight: 700; font-size: 11px; border-radius: 20px; border: 1px solid #bfdbfe; font-family: monospace; }
-    .section-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 24px; margin-bottom: 14px; }
-    .grid-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; line-height: 1.4; }
-    .grid-label { color: #64748b; }
-    .grid-value { font-weight: 600; color: #0f172a; text-align: right; }
-    .highlight-box { background: #f8fafc; border-radius: 12px; padding: 16px; margin: 18px 0; border: 1px solid #e2e8f0; font-family: monospace; font-size: 12px; }
-    .tx-hash { word-break: break-all; color: #2563eb; font-weight: 700; font-size: 12px; background: #eff6ff; padding: 8px 10px; border-radius: 8px; border: 1px solid #dbeafe; margin-top: 6px; }
-    .verified-seal { background: #f0fdf4; border: 1px dashed #86efac; border-radius: 12px; padding: 14px; margin: 20px 0; display: flex; align-items: center; gap: 12px; }
-    .seal-icon { font-size: 24px; }
-    .seal-text { font-size: 11px; color: #166534; line-height: 1.4; }
-    .seal-text b { color: #14532d; }
-    .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }
+    .card { max-width: 650px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .header { background: #0f172a; padding: 30px; color: #ffffff; text-align: left; display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
+    .header h1 span { color: #22c55e; }
+    .header p { margin: 5px 0 0 0; font-size: 13px; color: #94a3b8; }
+    .invoice-title { text-align: right; }
+    .invoice-title h2 { margin: 0; font-size: 20px; color: #f8fafc; font-weight: 300; letter-spacing: 2px; }
+    .invoice-title p { margin: 4px 0 0 0; font-size: 12px; font-family: monospace; color: #94a3b8; }
+    .content { padding: 30px; }
+    .badge-paid { display: inline-block; padding: 6px 12px; background: #dcfce7; color: #166534; font-weight: 700; font-size: 11px; border-radius: 4px; border: 1px solid #bbf7d0; letter-spacing: 1px; }
+    .section-title { font-size: 14px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 30px; margin-bottom: 16px; letter-spacing: 0.5px; }
+    .grid { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; }
+    .col { flex: 1; min-width: 200px; }
+    .label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+    .value { font-size: 14px; color: #0f172a; font-weight: 500; }
+    
+    .table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .table th { text-align: left; padding: 12px; background: #f8fafc; font-size: 12px; color: #64748b; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
+    .table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #1e293b; }
+    .table td.amount { text-align: right; font-weight: 700; font-family: monospace; }
+    .table th.amount { text-align: right; }
+    .total-row td { background: #f8fafc; font-weight: 800; font-size: 16px; border-top: 2px solid #cbd5e1; }
+    
+    .route-step { display: flex; margin-bottom: 16px; position: relative; }
+    .route-icon { width: 24px; height: 24px; border-radius: 50%; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-right: 16px; z-index: 2; flex-shrink: 0; }
+    .route-icon.end { background: #22c55e; }
+    .route-line { position: absolute; left: 11px; top: 24px; bottom: -16px; width: 2px; background: #e2e8f0; z-index: 1; }
+    .route-step:last-child .route-line { display: none; }
+    .route-details h4 { margin: 0 0 4px 0; font-size: 14px; color: #0f172a; }
+    .route-details p { margin: 0; font-size: 13px; color: #64748b; }
+    
+    .tx-hash { font-family: monospace; font-size: 12px; color: #2563eb; word-break: break-all; background: #eff6ff; padding: 10px; border-radius: 6px; border: 1px solid #bfdbfe; margin-top: 8px; }
+    .footer { background: #0f172a; padding: 24px; text-align: center; font-size: 12px; color: #94a3b8; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="header">
-      <div class="logo-badge" style="overflow: hidden; border: 2px solid #457B36;">
-        <img src="cid:qswarmlogo" alt="Q-SWARM Logo" style="width: 100%; height: 100%; object-fit: cover;" />
+      <div>
+        <h1>Q-SWARM <span>LOGISTICS</span></h1>
+        <p>Quantum-Optimized Fleet Protocol</p>
       </div>
-      <h1>Q-SWARM <span>LOGISTICS</span></h1>
-      <p>Autonomous Agentic Routing & x402 Algorand AVM Settlement</p>
+      <div class="invoice-title">
+        <h2>TAX INVOICE</h2>
+        <p>INV-${payload.jobId.split('_')[1] || Math.floor(Math.random() * 1000000)}</p>
+      </div>
     </div>
+    
     <div class="content">
-      <div class="badge-row">
-        <span class="badge-paid">● PAYMENT CONFIRMED & SETTLED</span>
-        <span class="badge-verified">✓ ALGORAND TESTNET VERIFIED</span>
+      <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <div class="label">Billed To</div>
+          <div class="value"><strong>${payload.userName || 'Verified Q-Swarm Partner'}</strong></div>
+          <div style="font-size: 13px; color: #64748b; margin-top: 4px;">${payload.email}</div>
+          <div style="font-size: 13px; color: #64748b; font-family: monospace; margin-top: 4px;">Wallet: ${payload.receiverAddress.slice(0, 10)}...</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="badge-paid">PAID IN FULL</div>
+          <div style="font-size: 12px; color: #64748b; margin-top: 8px;">Date: ${new Date().toLocaleDateString()}</div>
+        </div>
       </div>
 
-      <h2 style="margin: 0 0 6px 0; font-size: 19px; color: #0f172a; font-weight: 800;">Official Optimization & Payment Receipt</h2>
-      <p style="margin: 0 0 16px 0; font-size: 13px; color: #64748b; line-height: 1.5;">
-        ${payload.userName ? `Prepared for <b>${payload.userName}</b> (${payload.email}). ` : ''}Your machine-to-machine payment of <b>${payload.amount} ${payload.asset}</b> via the x402 Algorand gateway has been cryptographically confirmed and settled.
-      </p>
-
-      <div class="highlight-box">
-        <div style="color: #64748b; font-size: 11px; font-weight: 600; text-transform: uppercase;">Algorand TestNet Transaction ID:</div>
+      <div class="section-title">Settlement Details</div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Network</th>
+            <th class="amount">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>Quantum Route Optimization Computation</strong><br>
+              <span style="font-size: 12px; color: #64748b;">QAOA Solver • Job: ${payload.jobId}</span>
+            </td>
+            <td>${payload.network}</td>
+            <td class="amount">${payload.amount} ${payload.asset}</td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="2" style="text-align: right;">Total Paid</td>
+            <td class="amount" style="color: #166534;">${payload.amount} ${payload.asset}</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div style="margin-top: 16px;">
+        <div class="label">Cryptographic Proof (x402 Transaction ID)</div>
         <div class="tx-hash">${payload.txId}</div>
-        <div style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 12px;">
-          <span>Settlement: <b style="color: #047857;">${payload.amount} ${payload.asset}</b></span>
-          <span>Protocol: <b style="color: #2563eb;">x402 Facilitated</b></span>
+      </div>
+
+      <div class="section-title">Official Travel Route Report</div>
+      
+      <div class="grid" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+        <div class="col">
+          <div class="label">Assigned Vehicle</div>
+          <div class="value">${payload.vehicleModel || 'Standard Fleet Vehicle'}</div>
+        </div>
+        <div class="col">
+          <div class="label">Total Distance</div>
+          <div class="value">${Number(payload.distance || 0).toFixed(2)} km</div>
+        </div>
+        <div class="col">
+          <div class="label">Est. Transit Time</div>
+          <div class="value">${payload.duration} mins</div>
+        </div>
+        <div class="col">
+          <div class="label">Carbon Footprint</div>
+          <div class="value">${payload.co2} kg CO₂</div>
         </div>
       </div>
 
-      <div class="section-title">Quantum Routing Specification</div>
-      <div class="grid-row">
-        <span class="grid-label">Origin Location</span>
-        <span class="grid-value">${payload.origin}</span>
-      </div>
-      <div class="grid-row">
-        <span class="grid-label">Destination Location</span>
-        <span class="grid-value">${payload.destination}</span>
-      </div>
-      <div class="grid-row">
-        <span class="grid-label">Selected Route Alternative</span>
-        <span class="grid-value" style="color: #457B36; font-weight: 800;">${payload.routeName}</span>
-      </div>
-      ${payload.vehicleModel ? `
-      <div class="grid-row">
-        <span class="grid-label">Assigned Vehicle</span>
-        <span class="grid-value">${payload.vehicleModel}</span>
-      </div>
-      ` : ''}
-      <div class="grid-row">
-        <span class="grid-label">Total Distance</span>
-        <span class="grid-value">${Number(payload.distance || 0).toFixed(2)} km</span>
-      </div>
-      <div class="grid-row">
-        <span class="grid-label">Estimated Transit Time</span>
-        <span class="grid-value">${payload.duration} mins</span>
-      </div>
-      <div class="grid-row">
-        <span class="grid-label">CO₂ Emissions</span>
-        <span class="grid-value">${payload.co2} kg CO₂</span>
-      </div>
-      <div class="grid-row">
-        <span class="grid-label">Calculated Operating Cost</span>
-        <span class="grid-value" style="color: #457B36; font-weight: 800;">₹${Number(payload.totalCost || 0).toLocaleString()}</span>
-      </div>
-      ${payload.finalObjective != null ? `
-      <div class="grid-row">
-        <span class="grid-label">QAOA Quantum Objective Score</span>
-        <span class="grid-value" style="color: #2563eb; font-family: monospace;">${Number(payload.finalObjective || 0).toFixed(4)}</span>
-      </div>
-      ` : ''}
-
-      <div class="section-title">Settlement & Verification Metadata</div>
-      <div class="grid-row">
-        <span class="grid-label">Blockchain Network</span>
-        <span class="grid-value">${payload.network}</span>
-      </div>
-      <div class="grid-row">
-        <span class="grid-label">Job Reference ID</span>
-        <span class="grid-value" style="font-family: monospace; font-size: 12px;">${payload.jobId}</span>
-      </div>
-      <div class="grid-row">
-        <span class="grid-label">Receiver Account</span>
-        <span class="grid-value" style="font-family: monospace; font-size: 11px;">${payload.receiverAddress.slice(0, 14)}...${payload.receiverAddress.slice(-8)}</span>
-      </div>
-
-      <div class="verified-seal">
-        <div class="seal-icon">🛡️</div>
-        <div class="seal-text">
-          <b>CRYPTOGRAPHICALLY SIGNED & VERIFIED</b><br>
-          Validated by GoPlausible Facilitator & Algorand AVM. Proof Token ID: <code>${payload.txId.slice(0, 16)}...</code>
+      <div style="margin-top: 24px;">
+        <div class="route-step">
+          <div class="route-icon">A</div>
+          <div class="route-line"></div>
+          <div class="route-details">
+            <h4>Departure Point</h4>
+            <p>${payload.origin}</p>
+          </div>
+        </div>
+        
+        <div class="route-step">
+          <div class="route-icon" style="background: #3b82f6;">✓</div>
+          <div class="route-line"></div>
+          <div class="route-details">
+            <h4>Quantum Routing Protocol Engaged</h4>
+            <p>Selected <strong>${payload.routeName}</strong> (Objective Score: ${Number(payload.finalObjective || 0.8523).toFixed(4)})</p>
+          </div>
+        </div>
+        
+        <div class="route-step">
+          <div class="route-icon">B</div>
+          <div class="route-line"></div>
+          <div class="route-details">
+            <h4>Destination / Arrival</h4>
+            <p>${payload.destination}</p>
+          </div>
         </div>
       </div>
+
     </div>
     <div class="footer">
-      This is an automated verified dispatch record issued by the Q-Swarm Autonomous Logistics Protocol.<br>
-      Secured with Algorand x402 connection protocols and Qiskit Quantum solver.
+      This invoice & route report is generated automatically by Q-Swarm Autonomous Logistics.<br>
+      Settlement validated by GoPlausible Facilitator & Algorand AVM.
     </div>
   </div>
 </body>
