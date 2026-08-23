@@ -666,43 +666,7 @@ export default function MainWorkflow() {
         </div>
 
         <div className="flex items-center space-x-3">
-          {/* Firebase Google Auth Profile */}
-          {userProfile ? (
-            <div className="flex items-center space-x-2 bg-white/10 px-2.5 py-1 rounded-xl border border-white/10 text-xs">
-              {userProfile.photoURL ? (
-                <img src={userProfile.photoURL} alt="User Avatar" className="w-5 h-5 rounded-full object-cover" />
-              ) : (
-                <div className="w-5 h-5 rounded-full bg-brand-green flex items-center justify-center text-[10px] font-bold text-white">
-                  {userProfile.name.charAt(0)}
-                </div>
-              )}
-              <div className="hidden lg:block text-left">
-                <p className="font-semibold text-slate-200 text-[11px] leading-tight truncate max-w-[120px]">{userProfile.name}</p>
-                <p className="text-[9px] text-slate-400 font-mono leading-none truncate max-w-[120px]">{userProfile.email}</p>
-              </div>
-              <button 
-                onClick={handleSignOut} 
-                title="Sign Out" 
-                className="text-slate-400 hover:text-red-400 p-1 transition-colors"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ) : (
-            <button 
-              onClick={() => {
-                setLoginMethod('select');
-                setLoginError(null);
-                setPhoneNumber('');
-                setOtpCode('');
-                setShowLoginModal(true);
-              }}
-              className="flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-all shadow-sm"
-            >
-              <UserIcon className="w-3.5 h-3.5 text-brand-green" />
-              <span>Sign In</span>
-            </button>
-          )}
+
 
           
           {/* User Web3 Wallet */}
@@ -1201,7 +1165,7 @@ export default function MainWorkflow() {
                 <button onClick={() => setStep(3)} className="text-slate-500 hover:text-slate-700 text-sm font-semibold">Back</button>
                 <button 
                   onClick={() => setStep(5)}
-                  disabled={!capacityCheck || !capacityCheck.valid}
+                  disabled={!selectedVehicleModel || !capacityCheck || !capacityCheck.valid}
                   className="px-6 py-3 bg-brand-green hover:bg-brand-green/90 text-white font-bold rounded-xl transition-all flex items-center space-x-2 disabled:opacity-50"
                 >
                   <span>Continue</span>
