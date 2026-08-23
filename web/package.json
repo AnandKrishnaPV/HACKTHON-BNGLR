@@ -12,7 +12,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@perawallet/connect": "^1.6.0",
     "@types/leaflet": "^1.9.22",
+    "algosdk": "^3.7.0",
     "axios": "^1.19.0",
     "firebase": "^12.17.1",
     "framer-motion": "^13.1.0",

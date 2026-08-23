@@ -7,7 +7,7 @@ import {
   Play, MapPin, Truck, ShieldCheck, CreditCard, 
   Settings, ChevronRight, AlertTriangle, Compass, 
   CheckCircle, ArrowRight, Loader2, Sparkles, RefreshCw,
-  TrendingUp, Leaf, DollarSign, Clock, Layers, History, HelpCircle, Zap, Locate, Globe, Car, Package,
+  TrendingUp, Leaf, DollarSign, Clock, Layers, History, HelpCircle, Zap, Locate, Globe, Wallet, Car, Package,
   Mail, Send, FileText, Printer, Download, ExternalLink, Code2, Copy, Check, Eye, X, LogIn, LogOut, User as UserIcon, Phone
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -164,6 +164,8 @@ export default function MainWorkflow() {
   const [payStatus, setPayStatus] = useState<'idle' | 'required' | 'signing' | 'submitted' | 'confirmed' | 'failed'>('idle');
 
   // Firebase Auth state
+  const [peraWallet, setPeraWallet] = useState<any>(null);
+  const [accountAddress, setAccountAddress] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<{ email: string; name: string; photoURL?: string; phoneNumber?: string } | null>({
     email: 'anandkrishnapv09@gmail.com',
     name: 'Anand Krishna PV'
@@ -246,6 +248,36 @@ export default function MainWorkflow() {
       }
     }
   }, [selectedVehicleModel, vehicles, cargoWeight, cargoVolume]);
+
+  
+  useEffect(() => {
+    import('@perawallet/connect').then(({ PeraWalletConnect }) => {
+      const wallet = new PeraWalletConnect();
+      setPeraWallet(wallet);
+      wallet.reconnectSession().then((accounts) => {
+        if (accounts.length) {
+          setAccountAddress(accounts[0]);
+        }
+      }).catch(console.error);
+    });
+  }, []);
+
+  const handleConnectWallet = () => {
+    if (!peraWallet) return;
+    peraWallet.connect().then((newAccounts: string[]) => {
+      setAccountAddress(newAccounts[0]);
+    }).catch((error: any) => {
+      if (error?.data?.type !== "CONNECT_MODAL_CLOSED") {
+        console.error(error);
+      }
+    });
+  };
+
+  const handleDisconnectWallet = () => {
+    if (!peraWallet) return;
+    peraWallet.disconnect();
+    setAccountAddress(null);
+  };
 
   const fetchVehicles = async () => {
     try {
@@ -731,6 +763,27 @@ export default function MainWorkflow() {
               <span>Sign In</span>
             </button>
           )}
+
+          
+          {/* User Web3 Wallet */}
+          <div className="hidden md:flex items-center space-x-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 text-xs">
+            {accountAddress ? (
+              <>
+                <Wallet className="w-3.5 h-3.5 text-brand-green" />
+                <span className="text-slate-200 font-mono">
+                  {accountAddress.substring(0,6)}...{accountAddress.substring(accountAddress.length-4)}
+                </span>
+                <button onClick={handleDisconnectWallet} className="ml-2 text-slate-400 hover:text-red-400 transition-colors" title="Disconnect Wallet">
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </>
+            ) : (
+              <button onClick={handleConnectWallet} className="flex items-center space-x-1.5 font-semibold text-brand-green hover:text-white transition-colors">
+                <Wallet className="w-3.5 h-3.5" />
+                <span>Connect Wallet</span>
+              </button>
+            )}
+          </div>
 
           {walletStatus && (
             <div className="hidden md:flex items-center space-x-3 text-xs bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
