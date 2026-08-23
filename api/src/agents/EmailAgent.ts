@@ -119,7 +119,7 @@ export class EmailAgent {
       ` : ''}
       <div class="grid-row">
         <span class="grid-label">Total Distance</span>
-        <span class="grid-value">${payload.distance} km</span>
+        <span class="grid-value">${Number(payload.distance || 0).toFixed(2)} km</span>
       </div>
       <div class="grid-row">
         <span class="grid-label">Estimated Transit Time</span>
@@ -131,12 +131,12 @@ export class EmailAgent {
       </div>
       <div class="grid-row">
         <span class="grid-label">Calculated Operating Cost</span>
-        <span class="grid-value" style="color: #457B36; font-weight: 800;">₹${payload.totalCost.toLocaleString()}</span>
+        <span class="grid-value" style="color: #457B36; font-weight: 800;">₹${Number(payload.totalCost || 0).toLocaleString()}</span>
       </div>
       ${payload.finalObjective != null ? `
       <div class="grid-row">
         <span class="grid-label">QAOA Quantum Objective Score</span>
-        <span class="grid-value" style="color: #2563eb; font-family: monospace;">${payload.finalObjective.toFixed(4)}</span>
+        <span class="grid-value" style="color: #2563eb; font-family: monospace;">${Number(payload.finalObjective || 0).toFixed(4)}</span>
       </div>
       ` : ''}
 
@@ -184,7 +184,7 @@ export class EmailAgent {
           html: html,
           attachments: [{
             filename: 'logo.jpg',
-            path: '/Users/anandkrishnapv/Desktop/HACKTHON FILES - BNGLR/web/public/logo.jpg',
+            path: require('path').resolve(process.cwd(), '../web/public/logo.jpg'),
             cid: 'qswarmlogo'
           }]
         });
