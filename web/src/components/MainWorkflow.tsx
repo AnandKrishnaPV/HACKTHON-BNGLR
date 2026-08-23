@@ -20,7 +20,7 @@ const MapComponent = dynamic(() => import('./MapComponent'), { ssr: false });
 import { VoiceCopilot, QuantumVisualizer, GreenCertificateMint } from './new_ui';
 
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
+const API_BASE_URL = '/api';
 
 interface Vehicle {
   id: string;

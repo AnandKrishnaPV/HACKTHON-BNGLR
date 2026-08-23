@@ -13,7 +13,7 @@ export const FinancialLedger = () => {
   const fetchLedger = async () => {
     setLoading(true);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
+      const apiBase = '/api';
       const res = await axios.get(`${apiBase}/payments`, { timeout: 3000 });
       setPayments(res.data || []);
     } catch (err) {
