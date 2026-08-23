@@ -1386,7 +1386,7 @@ export default function MainWorkflow() {
                     </div>
                     <div className="flex justify-between border-b border-slate-200 pb-2">
                       <span className="text-slate-500">Settlement Price:</span>
-                      <span className="font-bold text-brand-green">0.05 USDC</span>
+                      <span className="font-bold text-brand-green">0.2 ALGO</span>
                     </div>
                     <div className="flex justify-between border-b border-slate-200 pb-2">
                       <span className="text-slate-500">Network Gas Fee:</span>
@@ -1441,7 +1441,7 @@ export default function MainWorkflow() {
                         className={`w-full py-4 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 ${!accountAddress ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-brand-green hover:bg-brand-green/90 text-white shadow-brand-green/20'}`}
                       >
                         <Zap className="w-4 h-4" />
-                        <span>{!accountAddress ? 'CONNECT WALLET TO PROCEED' : 'EXECUTE x402 PAYMENT ($0.05 USDC)'}</span>
+                        <span>{!accountAddress ? 'CONNECT WALLET TO PROCEED' : 'EXECUTE x402 PAYMENT (0.2 ALGO)'}</span>
                       </button>
                       
                       {accountAddress && (
@@ -1659,7 +1659,7 @@ export default function MainWorkflow() {
                               <ShieldCheck className="w-4 h-4 text-brand-green" />
                               <span>Algorand TestNet Settlement Proof</span>
                             </span>
-                            <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-mono">0.05 USDC</span>
+                            <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-mono">0.2 ALGO</span>
                           </div>
                           <div className="flex items-center justify-between font-mono bg-white p-2.5 rounded border border-slate-200">
                             <span className="text-slate-600 truncate pr-2" title={txHash}>{txHash}</span>
@@ -1893,7 +1893,7 @@ export default function MainWorkflow() {
                 </h3>
                 <ol className="list-decimal list-inside space-y-1.5 text-xs">
                   <li>The client requests a quantum route optimization.</li>
-                  <li>The API rejects it with a <b>402 Payment Required</b> challenge, specifying the cost (0.05 USDC) and the facilitator.</li>
+                  <li>The API rejects it with a <b>402 Payment Required</b> challenge, specifying the cost (0.2 ALGO) and the facilitator.</li>
                   <li>The client autonomously signs and broadcasts a micro-transaction on the <b>Algorand TestNet</b>.</li>
                   <li>Once settled, the client retries the request, attaching the Transaction ID in the <code className="bg-white px-1 border border-brand-green/20 text-brand-green rounded">X-402-Payment-Token</code> header.</li>
                   <li>The API verifies the transaction on-chain and proceeds with the computation.</li>

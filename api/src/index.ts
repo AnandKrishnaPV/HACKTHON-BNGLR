@@ -382,8 +382,8 @@ app.post('/api/optimize-route', async (c) => {
       const payment = await prisma.payment.create({
         data: {
           jobId: job.id,
-          amount: 0.05,
-          asset: 'USDC',
+          amount: 0.2,
+      asset: 'ALGO',
           network: 'ALGORAND_TESTNET',
           status: 'PENDING',
           transactionId: txToken
@@ -669,8 +669,8 @@ app.post('/api/x402/payment', async (c) => {
       blockRound: result.blockRound,
       fee: result.fee,
       timestamp: result.timestamp,
-      amount: 0.05,
-      asset: 'USDC',
+      amount: 0.2,
+      asset: 'ALGO',
       network: 'Algorand TestNet',
       receiver: RECEIVER_ADDRESS,
       facilitator: process.env.X402_FACILITATOR_URL || 'https://facilitator.goplausible.com',
@@ -698,8 +698,8 @@ app.post('/api/email/confirm-payment', async (c) => {
       email,
       jobId: jobId || 'job_default',
       txId,
-      amount: 0.05,
-      asset: 'USDC',
+      amount: 0.2,
+      asset: 'ALGO',
       network: 'Algorand TestNet',
       receiverAddress: RECEIVER_ADDRESS,
       origin: origin || 'N/A',
