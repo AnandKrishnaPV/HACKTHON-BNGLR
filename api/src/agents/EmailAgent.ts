@@ -90,7 +90,7 @@ export class EmailAgent {
       </div>
       <div class="invoice-title">
         <h2>TAX INVOICE</h2>
-        <p>INV-${payload.jobId.split('_')[1] || Math.floor(Math.random() * 1000000)}</p>
+        <p>INV-${(payload.jobId || '').split('_')[1] || Math.floor(Math.random() * 1000000)}</p>
       </div>
     </div>
     
@@ -100,7 +100,7 @@ export class EmailAgent {
           <div class="label">Billed To</div>
           <div class="value"><strong>${payload.userName || 'Verified Q-Swarm Partner'}</strong></div>
           <div style="font-size: 13px; color: #64748b; margin-top: 4px;">${payload.email}</div>
-          <div style="font-size: 13px; color: #64748b; font-family: monospace; margin-top: 4px;">Wallet: ${payload.receiverAddress.slice(0, 10)}...</div>
+          <div style="font-size: 13px; color: #64748b; font-family: monospace; margin-top: 4px;">Wallet: ${(payload.receiverAddress || '5C4UKY2NYXCOC5VFGFTLBANBYDETRNSVOYTBTJDSMY4INMS6EVN6KXQNF4').slice(0, 10)}...</div>
         </div>
         <div style="text-align: right;">
           <div class="badge-paid">PAID IN FULL</div>
@@ -207,7 +207,7 @@ export class EmailAgent {
         const info = await this.transporter.sendMail({
           from: process.env.EMAIL_FROM || '"Q-Swarm Logistics" <receipts@q-swarm.internal>',
           to: payload.email,
-          subject: `[Verified Receipt] Route Optimization Confirmed - ${payload.routeName} (${payload.txId.slice(0, 8)})`,
+          subject: `[Verified Receipt] Route Optimization Confirmed - ${payload.routeName} (${(payload.txId || 'TX_ALGORAND_TESTNET').slice(0, 8)})`,
           html: html
         });
         return { success: true, messageId: info.messageId };

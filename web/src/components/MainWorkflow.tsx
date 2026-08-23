@@ -88,7 +88,82 @@ export default function MainWorkflow() {
   const [error, setError] = useState<string | null>(null);
 
   // Database lists
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const DEFAULT_VEHICLES: Vehicle[] = [
+  {
+    id: 'v-1',
+    manufacturer: 'Tata Motors',
+    model: 'Tata Prima 5530.S',
+    sector: 'Heavy Transport',
+    imageUrl: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80',
+    type: 'Heavy Duty Trailer',
+    fuelType: 'Diesel',
+    payloadCapacity: 30000.0,
+    gvwr: 55000.0,
+    fuelConsumption: 35.0,
+    fuelTankCapacity: 400.0,
+    cargoVolume: 80.0,
+    maxSpeed: 90.0,
+    avgSpeed: 65.0,
+    co2EmissionFactor: 2.68,
+    isSystemData: true,
+  },
+  {
+    id: 'v-2',
+    manufacturer: 'Ashok Leyland',
+    model: 'Ecomet 1615 HE',
+    sector: 'Intermediate Freight',
+    imageUrl: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=800&q=80',
+    type: 'Intermediate Commercial Vehicle',
+    fuelType: 'Diesel',
+    payloadCapacity: 10500.0,
+    gvwr: 16100.0,
+    fuelConsumption: 22.0,
+    fuelTankCapacity: 185.0,
+    cargoVolume: 32.0,
+    maxSpeed: 80.0,
+    avgSpeed: 55.0,
+    co2EmissionFactor: 2.68,
+    isSystemData: true,
+  },
+  {
+    id: 'v-3',
+    manufacturer: 'Mahindra',
+    model: 'Furio 14',
+    sector: 'Light Delivery',
+    imageUrl: 'https://images.unsplash.com/photo-1552345388-782e443ce3f4?w=800&q=80',
+    type: 'Light Truck',
+    fuelType: 'Diesel',
+    payloadCapacity: 8500.0,
+    gvwr: 14000.0,
+    fuelConsumption: 16.0,
+    fuelTankCapacity: 190.0,
+    cargoVolume: 24.0,
+    maxSpeed: 80.0,
+    avgSpeed: 50.0,
+    co2EmissionFactor: 2.68,
+    isSystemData: true,
+  },
+  {
+    id: 'v-4',
+    manufacturer: 'Tata Motors',
+    model: 'Tata Ace Gold',
+    sector: 'Last-Mile Delivery',
+    imageUrl: 'https://images.unsplash.com/photo-1588614488390-349071b78294?w=800&q=80',
+    type: 'Mini Truck',
+    fuelType: 'Diesel',
+    payloadCapacity: 750.0,
+    gvwr: 1615.0,
+    fuelConsumption: 6.5,
+    fuelTankCapacity: 30.0,
+    cargoVolume: 4.5,
+    maxSpeed: 60.0,
+    avgSpeed: 40.0,
+    co2EmissionFactor: 2.68,
+    isSystemData: true,
+  }
+];
+
+  const [vehicles, setVehicles] = useState<Vehicle[]>(DEFAULT_VEHICLES);
   const [walletStatus, setWalletStatus] = useState<any>(null);
 
   // Step 2: Route Input
@@ -280,7 +355,7 @@ export default function MainWorkflow() {
   const fetchVehicles = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/vehicles`);
-      setVehicles(res.data);
+      if (Array.isArray(res.data) && res.data.length > 0) setVehicles(res.data);
       // Pick default: prefer a light truck, otherwise first in list
       // Vehicles loaded successfully. User must explicitly select one.
     } catch (err: any) {
