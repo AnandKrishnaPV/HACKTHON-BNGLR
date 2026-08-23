@@ -463,6 +463,7 @@ export default function MainWorkflow() {
           const selectedId = optRes.data.selectedRouteId;
           const best = candidateRoutes.find((r: any) => r.id === selectedId);
           if (best) setRecommendedRoute(best);
+          setStep(6);
         }, 1200);
       }, 1500);
 
